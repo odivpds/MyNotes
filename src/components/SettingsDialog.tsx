@@ -12,10 +12,21 @@ import { Button } from '@/components/ui/button'
 import { Settings, LogOut } from 'lucide-react'
 import { useSettings } from '@/hooks/useSettings'
 import { logout } from '@/app/login/actions'
+import { Input } from '@/components/ui/input'
+import { useEffect } from 'react'
 
 export function SettingsDialog() {
   const [open, setOpen] = useState(false)
-  const { confirmBeforeDelete, toggleConfirm } = useSettings()
+  const { confirmBeforeDelete, toggleConfirm, appName, updateAppName, appSuffix, updateAppSuffix, startTour, isLoaded } = useSettings()
+  const [tempName, setTempName] = useState('')
+  const [tempSuffix, setTempSuffix] = useState('')
+
+  useEffect(() => {
+    if (isLoaded) {
+      if (appName) setTempName(appName)
+      if (appSuffix) setTempSuffix(appSuffix)
+    }
+  }, [isLoaded, appName, appSuffix])
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -47,21 +58,76 @@ export function SettingsDialog() {
               <span className={`absolute top-1/2 -translate-y-1/2 w-5 h-5 bg-white border-2 border-black rounded-full transition-all ${confirmBeforeDelete ? 'left-[calc(100%-1.5rem)]' : 'left-1'}`} />
             </button>
           </div>
+
+          <div className="space-y-2 border-t-2 border-black/10 pt-4">
+            <h4 className="font-bold text-lg">Your Name</h4>
+            <p className="text-sm opacity-70">Customize the name used in the motivational quotes</p>
+            <div className="flex gap-2">
+              <Input
+                value={tempName}
+                onChange={(e) => setTempName(e.target.value)}
+                placeholder="Custom Name"
+                maxLength={15}
+                className="border-2 border-black rounded-lg shadow-[2px_2px_0_0_#000] focus-visible:ring-0 bg-white dark:bg-black/20 text-black dark:text-white"
+              />
+              <Button onClick={() => updateAppName(tempName)} className="border-2 border-black font-bold uppercase shadow-[2px_2px_0_0_#000] hover:translate-y-0.5 hover:translate-x-0.5 hover:shadow-none transition-all">
+                Save
+              </Button>
+            </div>
+          </div>
+
+          <div className="space-y-2 border-t-2 border-black/10 pt-4">
+            <h4 className="font-bold text-lg">Nopepads Name</h4>
+            <p className="text-sm opacity-70">Customize the app title (e.g. type &quot;ODIV&quot; for &quot;ODIV&apos;S NOPEPADS&quot;)</p>
+            <div className="flex gap-2">
+              <Input
+                value={tempSuffix}
+                onChange={(e) => setTempSuffix(e.target.value)}
+                placeholder="ODIV"
+                maxLength={10}
+                className="border-2 border-black rounded-lg shadow-[2px_2px_0_0_#000] focus-visible:ring-0 bg-white dark:bg-black/20 text-black dark:text-white"
+              />
+              <Button onClick={() => updateAppSuffix(tempSuffix)} className="border-2 border-black font-bold uppercase shadow-[2px_2px_0_0_#000] hover:translate-y-0.5 hover:translate-x-0.5 hover:shadow-none transition-all">
+                Save
+              </Button>
+            </div>
+          </div>
+
+          <div className="space-y-2 border-t-2 border-black/10 pt-4 pb-2">
+            <h4 className="font-bold text-lg">App Tour</h4>
+            <p className="text-sm opacity-70">Need a refresher on how things work?</p>
+            <Button
+              onClick={() => {
+                startTour()
+                setOpen(false)
+              }}
+              className="w-full border-2 border-black font-bold uppercase shadow-[2px_2px_0_0_#000] hover:translate-y-0.5 hover:translate-x-0.5 hover:shadow-none transition-all"
+            >
+              Replay Tour
+            </Button>
+          </div>
         </div>
 
         <div className="flex justify-between items-center pt-4 border-t-4 border-black mt-2">
           <form action={logout}>
             <Button
               type="submit"
-              className="border-2 border-black font-bold uppercase shadow-[4px_4px_0_0_#000] hover:translate-y-1 hover:translate-x-1 hover:shadow-none transition-all bg-red-500 text-white hover:bg-red-600 flex items-center gap-2"
+              onClick={() => {
+                localStorage.removeItem('tourStatus')
+                localStorage.removeItem('appName')
+                localStorage.removeItem('appSuffix')
+                localStorage.removeItem('confirmBeforeDelete')
+                localStorage.removeItem('hasSeenTour')
+              }}
+              className="border-2 border-black font-bold uppercase shadow-[4px_4px_0_0_#000] hover:translate-y-1 hover:translate-x-1 hover:shadow-none transition-all bg-red-500 text-black hover:bg-red-600 flex items-center gap-2"
             >
               <LogOut className="w-4 h-4" />
-              Log Out
+              Sign Out
             </Button>
           </form>
           <Button
             onClick={() => setOpen(false)}
-            className="border-2 border-black font-bold uppercase shadow-[4px_4px_0_0_#000] hover:translate-y-1 hover:translate-x-1 hover:shadow-none transition-all bg-note-yellow text-white hover:bg-note-yellow/90"
+            className="border-2 border-black font-bold uppercase shadow-[4px_4px_0_0_#000] hover:translate-y-1 hover:translate-x-1 hover:shadow-none transition-all bg-note-yellow text-black hover:bg-note-yellow/90"
           >
             Done
           </Button>

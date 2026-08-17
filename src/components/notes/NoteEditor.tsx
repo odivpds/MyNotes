@@ -9,7 +9,7 @@ import { NoteToolbar } from './NoteToolbar'
 import { useEffect, useState, useCallback, useRef } from 'react'
 import debounce from 'lodash.debounce'
 import { updateNote } from '@/app/notes/actions'
-import { Palette } from 'lucide-react'
+import { Palette, ArrowLeft, PenTool, X } from 'lucide-react'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,6 +17,9 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Button } from '@/components/ui/button'
+import Link from 'next/link'
+import { ThemeSwitcher } from '@/components/ThemeSwitcher'
+import { DeleteNoteButton } from '@/components/notes/DeleteNoteButton'
 
 type Note = {
   id: string
@@ -27,7 +30,7 @@ type Note = {
 
 const COLORS = ['Default', 'Yellow', 'Pink', 'Blue', 'Green', 'Purple', 'Orange', 'Red', 'Mint', 'Gray'];
 
-export function NoteEditor({ initialNote }: { initialNote: Note }) {
+export function NoteEditor({ initialNote, onDelete }: { initialNote: Note, onDelete?: () => Promise<void> }) {
   const colorMap: Record<string, string> = {
     'Default': 'bg-note-default',
     'Yellow': 'bg-note-yellow text-black',
@@ -40,12 +43,14 @@ export function NoteEditor({ initialNote }: { initialNote: Note }) {
     'Mint': 'bg-note-mint',
     'Gray': 'bg-note-gray'
   }
-  
+
   const [noteColor, setNoteColor] = useState(initialNote.color || 'Default')
   const bgColor = colorMap[noteColor] || colorMap['Default']
 
   const [saveStatus, setSaveStatus] = useState<'saved' | 'saving' | 'error'>('saved')
   const [title, setTitle] = useState(initialNote.title || '')
+  const [isToolbarOpen, setIsToolbarOpen] = useState(false)
+  
   const titleRef = useRef(title)
   const contentRef = useRef(initialNote.content)
 
@@ -84,7 +89,7 @@ export function NoteEditor({ initialNote }: { initialNote: Note }) {
     content: initialNote.content || '',
     editorProps: {
       attributes: {
-        class: 'tiptap focus:outline-none min-h-[400px] max-w-none p-6 text-lg',
+        class: 'tiptap focus:outline-none min-h-full max-w-none p-6 text-lg',
       },
     },
     onUpdate: ({ editor }) => {
@@ -124,11 +129,26 @@ export function NoteEditor({ initialNote }: { initialNote: Note }) {
 
   return (
     <div className="flex flex-col h-full flex-1 overflow-hidden text-note-fg bg-note-default relative">
-      {/* Top thin line */}
-      <div className={`h-1.5 w-full shrink-0 ${bgColor.split(' ')[0]}`} />
-      
+
+      {/* Expanding Top Navbar */}
+      <div className="absolute top-0 left-0 right-0 h-16 [@media(hover:hover)]:h-6 z-20 group">
+        <div className={`absolute top-0 left-0 w-full flex flex-col justify-center overflow-hidden transition-all duration-300 ease-out h-16 [@media(hover:hover)]:h-1.5 [@media(hover:hover)]:group-hover:h-16 ${bgColor} shadow-[0_4px_0_0_#000] [@media(hover:hover)]:shadow-none [@media(hover:hover)]:group-hover:shadow-[0_4px_0_0_#000] border-b-4 border-black [@media(hover:hover)]:border-b-0 [@media(hover:hover)]:group-hover:border-b-4`}>
+          <div className="w-full flex items-center justify-between px-4 sm:px-6 opacity-100 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100 transition-opacity duration-300">
+            <Link href="/notes" className="flex items-center gap-2 font-bold hover:-translate-y-0.5 transition-transform" title="Back to Notes">
+              <ArrowLeft className="w-6 h-6" />
+              <span className="hidden sm:inline uppercase tracking-widest">Back</span>
+            </Link>
+
+            <div className="flex items-center gap-2 sm:gap-4">
+              <ThemeSwitcher />
+              {onDelete && <DeleteNoteButton onDelete={onDelete} />}
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Header / Title area (Plain) */}
-      <div className="flex justify-between items-start pt-6 px-6 sm:px-12">
+      <div className="flex items-center pt-24 [@media(hover:hover)]:pt-10 px-6 sm:px-12 gap-4">
         <input
           type="text"
           value={title}
@@ -137,21 +157,38 @@ export function NoteEditor({ initialNote }: { initialNote: Note }) {
           className="text-3xl sm:text-4xl font-black focus:outline-none w-full bg-transparent placeholder:text-note-fg/30 text-note-fg"
         />
       </div>
-      
+
       {/* Editor Content */}
-      <div className="flex-1 overflow-y-auto cursor-text px-6 sm:px-12 pb-32" onClick={() => editor?.commands.focus()}>
+      <div className="flex-1 overflow-y-auto cursor-text px-6 sm:px-12 pb-32 mt-4" onClick={() => editor?.commands.focus()}>
         <EditorContent editor={editor} />
       </div>
 
       {/* Bottom Floating Bar */}
       <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-6 flex justify-between items-end pointer-events-none">
-        
-        {/* Formatting Toolbar */}
-        <div className="pointer-events-auto bg-note-default rounded-xl border-4 border-black shadow-[4px_4px_0_0_#000] overflow-hidden">
-          <NoteToolbar editor={editor} />
+
+        {/* Formatting Toolbar Area */}
+        <div className="pointer-events-auto relative flex flex-col items-start sm:gap-0">
+          
+          {/* Mobile Toggle Button */}
+          <Button
+            onClick={() => setIsToolbarOpen(!isToolbarOpen)}
+            className="sm:hidden flex items-center justify-center border-4 border-black shadow-[4px_4px_0_0_#000] active:translate-y-1 active:translate-x-1 active:shadow-none transition-all bg-note-default text-note-fg hover:bg-black/5 h-12 w-12 rounded-full z-20 relative"
+          >
+            {isToolbarOpen ? <X className="w-6 h-6" /> : <PenTool className="w-6 h-6" />}
+          </Button>
+
+          {/* Collapsible Toolbar */}
+          <div className={`absolute bottom-full left-0 mb-4 sm:static sm:mb-0 overflow-hidden transition-all duration-300 ease-out origin-bottom-left sm:origin-bottom ${
+            isToolbarOpen ? 'opacity-100 scale-100 pointer-events-auto translate-y-0' : 'opacity-0 scale-95 pointer-events-none translate-y-2 sm:translate-y-0 sm:pointer-events-auto sm:opacity-100 sm:scale-100'
+          } bg-note-default rounded-xl sm:border-4 border-black sm:shadow-[4px_4px_0_0_#000] z-10`}>
+            {/* Wrapper to maintain border safely during animation */}
+            <div className={`border-4 border-black sm:border-0 rounded-xl sm:rounded-none bg-note-default`}>
+              <NoteToolbar editor={editor} />
+            </div>
+          </div>
         </div>
-        
-        {/* Actions (Color & Save) */}
+
+        {/* Actions */}
         <div className="flex items-center gap-2 sm:gap-4 pointer-events-auto bg-note-default p-2 rounded-xl border-4 border-black shadow-[4px_4px_0_0_#000]">
           <DropdownMenu>
             <DropdownMenuTrigger className="inline-flex items-center justify-center border-2 border-black hover:translate-y-0.5 hover:translate-x-0.5 transition-all rounded-full bg-white text-black h-8 w-8">

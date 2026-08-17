@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { useSettings } from '@/hooks/useSettings'
 
 const getQuotes = (name: string) => [
   `"You got this, ${name}! One step at a time."`,
@@ -15,9 +16,12 @@ const getQuotes = (name: string) => [
 ]
 
 export function MotivationalQuote({ userName }: { userName: string }) {
+  const { appName, isLoaded } = useSettings()
   const [quoteIndex, setQuoteIndex] = useState(0)
   const [isClient, setIsClient] = useState(false)
-  const quotes = getQuotes(userName)
+  
+  const displayName = (isLoaded && appName) ? appName : userName
+  const quotes = getQuotes(displayName)
 
   useEffect(() => {
     setIsClient(true)

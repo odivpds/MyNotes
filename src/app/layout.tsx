@@ -27,8 +27,18 @@ const spaceMono = Space_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "MyNotes",
-  description: "A fun, bold, and quirky notes app",
+  title: "NOPEPADS",
+  description: "A brutally awesome markdown notebook",
+  icons: {
+    icon: '/nopePadsLogo3d.png',
+    apple: '/nopePadsLogo3d.png',
+  },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "NOPEPADS",
+  },
+  themeColor: "#E6B905",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

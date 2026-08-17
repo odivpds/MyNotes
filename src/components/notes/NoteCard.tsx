@@ -155,16 +155,14 @@ export function NoteCard({ note }: { note: Note }) {
           </DialogHeader>
           <DialogFooter className="flex flex-row justify-end gap-2 sm:gap-4 mt-4">
             <Button
-              variant="outline"
               onClick={() => setIsDeleteDialogOpen(false)}
-              className="border-2 border-black font-bold uppercase shadow-[4px_4px_0_0_#000] hover:translate-y-1 hover:translate-x-1 hover:shadow-none transition-all bg-white text-black"
+              className="border-2 border-black font-bold uppercase shadow-[4px_4px_0_0_#000] hover:translate-y-1 hover:translate-x-1 hover:shadow-none transition-all bg-white dark:bg-zinc-800 text-black dark:text-white hover:bg-gray-100 dark:hover:bg-zinc-700"
             >
               Cancel
             </Button>
             <Button
-              variant="destructive"
               onClick={handleDelete}
-              className="border-2 border-black font-bold uppercase shadow-[4px_4px_0_0_#000] hover:translate-y-1 hover:translate-x-1 hover:shadow-none transition-all bg-red-500 text-white hover:bg-red-600"
+              className="border-2 border-black font-bold uppercase shadow-[4px_4px_0_0_#000] hover:translate-y-1 hover:translate-x-1 hover:shadow-none transition-all bg-red-500 text-black hover:bg-red-600"
             >
               Yes, Delete
             </Button>
