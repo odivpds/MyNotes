@@ -4,7 +4,12 @@ import { useState } from 'react'
 import { Input } from '@/components/ui/input'
 import { Eye, EyeOff } from 'lucide-react'
 
-export function PasswordInput(props: React.ComponentProps<typeof Input>) {
+type PasswordInputProps = React.ComponentProps<typeof Input> & {
+  shiftOnFocus?: boolean
+  iconClassName?: string
+}
+
+export function PasswordInput({ shiftOnFocus = false, iconClassName = "text-black", ...props }: PasswordInputProps) {
   const [showPassword, setShowPassword] = useState(false)
 
   return (
@@ -14,11 +19,11 @@ export function PasswordInput(props: React.ComponentProps<typeof Input>) {
         type={showPassword ? 'text' : 'password'}
         className={`peer ${props.className || ''} pr-12`}
       />
-      <div className="absolute right-4 top-0 bottom-0 flex items-center justify-center transition-all peer-focus-visible:translate-x-1.5 peer-focus-visible:translate-y-1.5 pointer-events-none">
+      <div className={`absolute right-4 top-0 bottom-0 flex items-center justify-center pointer-events-none ${shiftOnFocus ? 'transition-all peer-focus-visible:translate-x-1.5 peer-focus-visible:translate-y-1.5' : ''}`}>
         <button
           type="button"
           onClick={() => setShowPassword(!showPassword)}
-          className="text-black hover:opacity-70 transition-opacity pointer-events-auto"
+          className={`${iconClassName} hover:opacity-70 transition-opacity pointer-events-auto`}
           aria-label={showPassword ? 'Hide password' : 'Show password'}
         >
           {showPassword ? (

@@ -11,15 +11,20 @@ import {
 import { Button } from '@/components/ui/button'
 import { Settings, LogOut } from 'lucide-react'
 import { useSettings } from '@/hooks/useSettings'
-import { logout } from '@/app/login/actions'
+import { logout, updatePassword } from '@/app/login/actions'
 import { Input } from '@/components/ui/input'
 import { useEffect } from 'react'
+import { PasswordInput } from '@/components/PasswordInput'
 
 export function SettingsDialog() {
   const [open, setOpen] = useState(false)
   const { confirmBeforeDelete, toggleConfirm, appName, updateAppName, appSuffix, updateAppSuffix, startTour, isLoaded } = useSettings()
   const [tempName, setTempName] = useState('')
   const [tempSuffix, setTempSuffix] = useState('')
+  const [newPassword, setNewPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [passwordStatus, setPasswordStatus] = useState<{ success?: boolean; message?: string }>({})
+  const [isUpdatingPassword, setIsUpdatingPassword] = useState(false)
 
   useEffect(() => {
     if (isLoaded) {
@@ -27,6 +32,27 @@ export function SettingsDialog() {
       if (appSuffix) setTempSuffix(appSuffix)
     }
   }, [isLoaded, appName, appSuffix])
+
+  const handleUpdatePassword = async () => {
+    setPasswordStatus({})
+    if (newPassword !== confirmPassword) {
+      setPasswordStatus({ success: false, message: 'Passwords do not match!' })
+      return
+    }
+    if (newPassword.length < 6) {
+      setPasswordStatus({ success: false, message: 'Password must be at least 6 characters.' })
+      return
+    }
+    setIsUpdatingPassword(true)
+    const result = await updatePassword(newPassword)
+    setPasswordStatus(result)
+    setIsUpdatingPassword(false)
+    if (result.success) {
+      setNewPassword('')
+      setConfirmPassword('')
+      setTimeout(() => setPasswordStatus({}), 3000)
+    }
+  }
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -37,7 +63,7 @@ export function SettingsDialog() {
       >
         <Settings className="w-5 h-5" />
       </DialogTrigger>
-      <DialogContent className="border-4 border-black rounded-xl shadow-[8px_8px_0_0_#000] bg-app text-foreground sm:max-w-md [&>button]:hidden">
+      <DialogContent className="max-h-[85vh] overflow-y-auto border-4 border-black rounded-xl shadow-[8px_8px_0_0_#000] bg-app text-foreground sm:max-w-md [&>button]:hidden">
         <DialogHeader>
           <DialogTitle className="font-black text-2xl uppercase border-b-4 border-black pb-4">Settings</DialogTitle>
         </DialogHeader>
@@ -92,7 +118,38 @@ export function SettingsDialog() {
               </Button>
             </div>
           </div>
-
+          <div className="space-y-2 border-t-2 border-black/10 pt-4">
+            <h4 className="font-bold text-lg">Change Password</h4>
+            <p className="text-sm opacity-70">Update your account password</p>
+            <div className="space-y-3 pt-2">
+              <PasswordInput
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                placeholder="New Password"
+                iconClassName="text-black dark:text-white"
+                className="border-2 border-black rounded-lg shadow-[2px_2px_0_0_#000] focus-visible:ring-0 bg-white dark:bg-black/20 text-black dark:text-white"
+              />
+              <PasswordInput
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="Confirm New Password"
+                iconClassName="text-black dark:text-white"
+                className="border-2 border-black rounded-lg shadow-[2px_2px_0_0_#000] focus-visible:ring-0 bg-white dark:bg-black/20 text-black dark:text-white"
+              />
+              {passwordStatus.message && (
+                <p className={`text-sm font-bold ${passwordStatus.success ? 'text-note-green' : 'text-red-500'}`}>
+                  {passwordStatus.message}
+                </p>
+              )}
+              <Button
+                onClick={handleUpdatePassword}
+                disabled={isUpdatingPassword || !newPassword || !confirmPassword}
+                className="w-full border-2 border-black font-bold uppercase shadow-[2px_2px_0_0_#000] hover:translate-y-0.5 hover:translate-x-0.5 hover:shadow-none transition-all disabled:opacity-50"
+              >
+                {isUpdatingPassword ? 'Updating...' : 'Update Password'}
+              </Button>
+            </div>
+          </div>
           <div className="space-y-2 border-t-2 border-black/10 pt-4 pb-2">
             <h4 className="font-bold text-lg">App Tour</h4>
             <p className="text-sm opacity-70">Need a refresher on how things work?</p>

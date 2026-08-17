@@ -83,3 +83,36 @@ export async function loginWithGoogle() {
     redirect(data.url)
   }
 }
+
+export async function updatePassword(password: string) {
+  try {
+    const supabase = await createClient()
+    const { error } = await supabase.auth.updateUser({
+      password: password
+    })
+    
+    if (error) {
+      return { success: false, message: error.message }
+    }
+    
+    return { success: true, message: 'Password updated successfully!' }
+  } catch (err: any) {
+    return { success: false, message: err.message || 'An unknown error occurred' }
+  }
+}
+export async function resetPassword(email: string) {
+  try {
+    const supabase = await createClient()
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/auth/callback`,
+    })
+    
+    if (error) {
+      return { success: false, message: error.message }
+    }
+    
+    return { success: true, message: 'Password reset email sent! Check your inbox.' }
+  } catch (err: any) {
+    return { success: false, message: err.message || 'An unknown error occurred' }
+  }
+}

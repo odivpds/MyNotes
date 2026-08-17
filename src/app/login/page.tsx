@@ -2,6 +2,7 @@ import { login, signup, loginWithGoogle } from './actions'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { PasswordInput } from '@/components/PasswordInput'
+import { ForgotPasswordDialog } from '@/components/ForgotPasswordDialog'
 
 export default async function LoginPage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
   const { error } = await searchParams
@@ -40,8 +41,12 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
               id="password"
               name="password"
               required
+              shiftOnFocus={true}
               className="border-4 border-black rounded-none shadow-[6px_6px_0_0_#000] focus-visible:ring-0 focus-visible:shadow-none focus-visible:translate-x-1.5 focus-visible:translate-y-1.5 transition-all h-12 text-lg font-bold bg-white text-black"
             />
+            <div className="flex justify-end">
+              <ForgotPasswordDialog />
+            </div>
           </div>
           <div className="flex flex-col sm:flex-row gap-4 pt-4">
             <Button
