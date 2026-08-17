@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Comic_Neue, Space_Grotesk, Space_Mono, Press_Start_2P } from "next/font/google";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import "./globals.css";
@@ -26,19 +26,26 @@ const spaceMono = Space_Mono({
   weight: ["400", "700"],
 });
 
+export const viewport: Viewport = {
+  themeColor: "#E6B905",
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+};
+
 export const metadata: Metadata = {
   title: "NOPEPADS",
   description: "A brutally awesome markdown notebook",
   icons: {
     icon: '/nopePadsLogo3d.png',
-    apple: '/nopePadsLogo3d.png',
+    apple: '/nopePadsLogo.png',
   },
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
     title: "NOPEPADS",
   },
-  themeColor: "#E6B905",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
