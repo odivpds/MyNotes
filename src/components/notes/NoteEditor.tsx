@@ -30,7 +30,7 @@ const COLORS = ['Default', 'Yellow', 'Pink', 'Blue', 'Green', 'Purple', 'Orange'
 export function NoteEditor({ initialNote }: { initialNote: Note }) {
   const colorMap: Record<string, string> = {
     'Default': 'bg-note-default',
-    'Yellow': 'bg-note-yellow',
+    'Yellow': 'bg-note-yellow text-black',
     'Pink': 'bg-note-pink',
     'Blue': 'bg-note-blue',
     'Green': 'bg-note-green',
@@ -123,29 +123,48 @@ export function NoteEditor({ initialNote }: { initialNote: Note }) {
   }
 
   return (
-    <div className="flex flex-col border-4 border-black rounded-xl shadow-[8px_8px_0_0_#000] overflow-hidden text-note-fg bg-note-default">
-      {/* Header / Title area */}
-      <div className={`flex justify-between items-center p-4 border-b-4 border-black ${bgColor}`}>
+    <div className="flex flex-col h-full flex-1 overflow-hidden text-note-fg bg-note-default relative">
+      {/* Top thin line */}
+      <div className={`h-1.5 w-full shrink-0 ${bgColor.split(' ')[0]}`} />
+      
+      {/* Header / Title area (Plain) */}
+      <div className="flex justify-between items-start pt-6 px-6 sm:px-12">
         <input
           type="text"
           value={title}
           onChange={handleTitleChange}
           placeholder="Note Title"
-          className="text-2xl sm:text-3xl font-black focus:outline-none w-full bg-transparent placeholder:text-note-fg/50 text-note-fg"
+          className="text-3xl sm:text-4xl font-black focus:outline-none w-full bg-transparent placeholder:text-note-fg/30 text-note-fg"
         />
-        <div className="flex items-center gap-4 ml-4 shrink-0">
+      </div>
+      
+      {/* Editor Content */}
+      <div className="flex-1 overflow-y-auto cursor-text px-6 sm:px-12 pb-32" onClick={() => editor?.commands.focus()}>
+        <EditorContent editor={editor} />
+      </div>
+
+      {/* Bottom Floating Bar */}
+      <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-6 flex justify-between items-end pointer-events-none">
+        
+        {/* Formatting Toolbar */}
+        <div className="pointer-events-auto bg-note-default rounded-xl border-4 border-black shadow-[4px_4px_0_0_#000] overflow-hidden">
+          <NoteToolbar editor={editor} />
+        </div>
+        
+        {/* Actions (Color & Save) */}
+        <div className="flex items-center gap-2 sm:gap-4 pointer-events-auto bg-note-default p-2 rounded-xl border-4 border-black shadow-[4px_4px_0_0_#000]">
           <DropdownMenu>
-            <DropdownMenuTrigger className="inline-flex items-center justify-center border-2 border-black shadow-[2px_2px_0_0_#000] hover:translate-y-0.5 hover:translate-x-0.5 hover:shadow-none transition-all rounded-full bg-white text-black h-8 w-8">
+            <DropdownMenuTrigger className="inline-flex items-center justify-center border-2 border-black hover:translate-y-0.5 hover:translate-x-0.5 transition-all rounded-full bg-white text-black h-8 w-8">
               <Palette className="w-4 h-4" />
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="border-4 border-black rounded-xl p-3 shadow-[4px_4px_0_0_#000] bg-white w-48" align="end">
+            <DropdownMenuContent className="border-4 border-black rounded-xl p-3 shadow-[4px_4px_0_0_#000] bg-white w-48 mb-2" align="end" sideOffset={10}>
               <div className="mb-2 font-bold text-sm text-black">Color</div>
               <div className="grid grid-cols-5 gap-2">
                 {COLORS.map((colorName) => (
                   <DropdownMenuItem
                     key={colorName}
                     onClick={() => handleColorChange(colorName)}
-                    className={`w-6 h-6 rounded-full border-2 border-black cursor-pointer p-0 ${colorMap[colorName] || 'bg-note-default'} ${noteColor === colorName ? 'ring-2 ring-offset-2 ring-black' : ''}`}
+                    className={`w-6 h-6 rounded-full border-2 border-black cursor-pointer p-0 ${colorMap[colorName].split(' ')[0] || 'bg-note-default'} ${noteColor === colorName ? 'ring-2 ring-offset-2 ring-black' : ''}`}
                     title={colorName}
                   />
                 ))}
@@ -155,14 +174,6 @@ export function NoteEditor({ initialNote }: { initialNote: Note }) {
 
           <StatusIndicator />
         </div>
-      </div>
-      
-      {/* Toolbar */}
-      <NoteToolbar editor={editor} />
-      
-      {/* Editor Content */}
-      <div className="flex-1 overflow-y-auto cursor-text bg-note-default" onClick={() => editor?.commands.focus()}>
-        <EditorContent editor={editor} />
       </div>
     </div>
   )

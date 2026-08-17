@@ -57,7 +57,7 @@ export default async function NoteEditorPage({ params }: { params: Promise<{ id:
         </div>
       </header>
 
-      <main className="flex-1 p-4 md:p-8 max-w-5xl mx-auto w-full">
+      <main className="flex-1 w-full flex flex-col">
         <NoteEditor initialNote={note} />
       </main>
     </div>

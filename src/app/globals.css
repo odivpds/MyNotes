@@ -2,7 +2,7 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
-@custom-variant dark (&:is(.dark *));
+@custom-variant dark (&:is([data-theme="dark"] *));
 
 @theme inline {
   --color-background: var(--background);
@@ -76,7 +76,7 @@
   --bg-action-hover: #FF94AE;
 
   --note-default: #FFFFFF;
-  --note-yellow: #FFDE59;
+  --note-yellow: #E6B905;
   --note-pink: #FF6B6B;
   --note-blue: #7BDFF2;
   --note-green: #8CE5A7;
@@ -130,7 +130,7 @@
   --bg-action-hover: #D60270;
 
   --note-default: #2A2A35;
-  --note-yellow: #B28F00;
+  --note-yellow: #E6B905;
   --note-pink: #992323;
   --note-blue: #1A7F92;
   --note-green: #2B7A42;

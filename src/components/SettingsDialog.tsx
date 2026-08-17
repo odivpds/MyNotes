@@ -19,7 +19,7 @@ export function SettingsDialog() {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger 
+      <DialogTrigger
         render={
           <Button variant="outline" size="icon" title="Settings" className="border-2 border-black font-bold uppercase shadow-[4px_4px_0_0_#000] hover:translate-y-1 hover:translate-x-1 hover:shadow-none transition-transform bg-note-default text-note-fg" />
         }
@@ -30,16 +30,16 @@ export function SettingsDialog() {
         <DialogHeader>
           <DialogTitle className="font-black text-2xl uppercase border-b-4 border-black pb-4">Settings</DialogTitle>
         </DialogHeader>
-        
+
         <div className="py-4 space-y-6">
           <div className="flex items-center justify-between">
             <div>
               <h4 className="font-bold text-lg">Confirm before deleting</h4>
               <p className="text-sm opacity-70">Show a popup before deleting a note</p>
             </div>
-            
+
             {/* Custom Neobrutalist Toggle */}
-            <button 
+            <button
               type="button"
               onClick={() => toggleConfirm(!confirmBeforeDelete)}
               className={`relative w-14 h-8 border-2 border-black rounded-full shadow-[2px_2px_0_0_#000] transition-colors focus:outline-none ${confirmBeforeDelete ? 'bg-note-green' : 'bg-gray-400'}`}
@@ -48,20 +48,20 @@ export function SettingsDialog() {
             </button>
           </div>
         </div>
-        
+
         <div className="flex justify-between items-center pt-4 border-t-4 border-black mt-2">
           <form action={logout}>
-            <Button 
-              type="submit" 
+            <Button
+              type="submit"
               className="border-2 border-black font-bold uppercase shadow-[4px_4px_0_0_#000] hover:translate-y-1 hover:translate-x-1 hover:shadow-none transition-all bg-red-500 text-white hover:bg-red-600 flex items-center gap-2"
             >
               <LogOut className="w-4 h-4" />
               Log Out
             </Button>
           </form>
-          <Button 
+          <Button
             onClick={() => setOpen(false)}
-            className="border-2 border-black font-bold uppercase shadow-[4px_4px_0_0_#000] hover:translate-y-1 hover:translate-x-1 hover:shadow-none transition-all bg-action text-white hover:bg-action-hover"
+            className="border-2 border-black font-bold uppercase shadow-[4px_4px_0_0_#000] hover:translate-y-1 hover:translate-x-1 hover:shadow-none transition-all bg-note-yellow text-white hover:bg-note-yellow/90"
           >
             Done
           </Button>
