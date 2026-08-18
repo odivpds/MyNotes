@@ -62,7 +62,7 @@ export function MotivationalQuote({ userName }: { userName: string }) {
   const currentQuote = quotes[quoteIndex]
 
   return (
-    <div className="text-black dark:text-white font-black text-2xl md:text-3xl lg:text-4xl xl:text-6xl leading-tight uppercase min-h-[500px] xl:min-h-[1000px] flex items-center justify-end text-right [text-shadow:3px_3px_0_#fff] dark:[text-shadow:3px_3px_0_#000] px-4 md:px-6 lg:px-8 xl:px-20">
+    <div className="text-black dark:text-white w-full font-black text-2xl md:text-3xl lg:text-4xl xl:text-6xl leading-tight uppercase flex items-center justify-end text-right [text-shadow:3px_3px_0_#fff] dark:[text-shadow:3px_3px_0_#000] px-4 md:px-6 lg:px-8 xl:px-20">
       <AnimatePresence mode="wait">
         <motion.div
           key={quoteIndex}

@@ -9,7 +9,7 @@ import { NoteToolbar } from './NoteToolbar'
 import { useEffect, useState, useCallback, useRef } from 'react'
 import debounce from 'lodash.debounce'
 import { updateNote } from '@/app/notes/actions'
-import { Palette, ArrowLeft, PenTool, X } from 'lucide-react'
+import { Palette, ArrowLeft, PenTool, X, Pin, PinOff, Archive, ArchiveRestore } from 'lucide-react'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -21,12 +21,9 @@ import Link from 'next/link'
 import { ThemeSwitcher } from '@/components/ThemeSwitcher'
 import { DeleteNoteButton } from '@/components/notes/DeleteNoteButton'
 
-type Note = {
-  id: string
-  title: string
-  content: any
-  color: string | null
-}
+import { notes } from '@/db/schema'
+
+type Note = typeof notes.$inferSelect
 
 const COLORS = ['Default', 'Yellow', 'Pink', 'Blue', 'Green', 'Purple', 'Orange', 'Red', 'Mint', 'Gray'];
 
@@ -50,7 +47,21 @@ export function NoteEditor({ initialNote, onDelete }: { initialNote: Note, onDel
   const [saveStatus, setSaveStatus] = useState<'saved' | 'saving' | 'error'>('saved')
   const [title, setTitle] = useState(initialNote.title || '')
   const [isToolbarOpen, setIsToolbarOpen] = useState(false)
-  
+  const [isPinned, setIsPinned] = useState(initialNote.isPinned || false)
+  const [isArchived, setIsArchived] = useState(initialNote.isArchived || false)
+
+  const handleTogglePin = async () => {
+    const newVal = !isPinned
+    setIsPinned(newVal)
+    await updateNote(initialNote.id, { isPinned: newVal })
+  }
+
+  const handleToggleArchive = async () => {
+    const newVal = !isArchived
+    setIsArchived(newVal)
+    await updateNote(initialNote.id, { isArchived: newVal })
+  }
+
   const titleRef = useRef(title)
   const contentRef = useRef(initialNote.content)
 
@@ -105,7 +116,7 @@ export function NoteEditor({ initialNote, onDelete }: { initialNote: Note, onDel
     }
   }, [debouncedSave])
 
-  const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleTitleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setTitle(e.target.value)
     debouncedSave()
   }
@@ -127,6 +138,16 @@ export function NoteEditor({ initialNote, onDelete }: { initialNote: Note, onDel
     return <span className="text-sm font-bold text-note-fg bg-note-green px-2 py-1 rounded-full border-2 border-black">Saved</span>
   }
 
+  const titleTextareaRef = useRef<HTMLTextAreaElement>(null)
+
+  // Auto-resize title textarea
+  useEffect(() => {
+    if (titleTextareaRef.current) {
+      titleTextareaRef.current.style.height = 'auto'
+      titleTextareaRef.current.style.height = `${titleTextareaRef.current.scrollHeight}px`
+    }
+  }, [title])
+
   return (
     <div className="flex flex-col h-full flex-1 overflow-hidden text-note-fg bg-note-default relative">
 
@@ -140,6 +161,26 @@ export function NoteEditor({ initialNote, onDelete }: { initialNote: Note, onDel
             </Link>
 
             <div className="flex items-center gap-2 sm:gap-4">
+              <Button
+                variant="outline"
+                size="icon"
+                title={isPinned ? "Unpin Note" : "Pin Note"}
+                onClick={handleTogglePin}
+                className={`hidden sm:inline-flex border-2 border-black rounded-none shadow-[2px_2px_0_0_#000] hover:translate-y-0.5 hover:translate-x-0.5 hover:shadow-none transition-all w-8 h-8 ${isPinned ? 'bg-note-yellow text-black' : 'bg-white dark:bg-zinc-800 text-black dark:text-white'}`}
+              >
+                {isPinned ? <PinOff className="w-4 h-4" /> : <Pin className="w-4 h-4" />}
+              </Button>
+
+              <Button
+                variant="outline"
+                size="icon"
+                title={isArchived ? "Unarchive Note" : "Archive Note"}
+                onClick={handleToggleArchive}
+                className={`hidden sm:inline-flex border-2 border-black rounded-none shadow-[2px_2px_0_0_#000] hover:translate-y-0.5 hover:translate-x-0.5 hover:shadow-none transition-all w-8 h-8 ${isArchived ? 'bg-black text-white dark:bg-white dark:text-black' : 'bg-white dark:bg-zinc-800 text-black dark:text-white'}`}
+              >
+                {isArchived ? <ArchiveRestore className="w-4 h-4" /> : <Archive className="w-4 h-4" />}
+              </Button>
+
               <ThemeSwitcher />
               {onDelete && <DeleteNoteButton onDelete={onDelete} />}
             </div>
@@ -149,12 +190,19 @@ export function NoteEditor({ initialNote, onDelete }: { initialNote: Note, onDel
 
       {/* Header / Title area (Plain) */}
       <div className="flex items-center pt-24 [@media(hover:hover)]:pt-10 px-6 sm:px-12 gap-4">
-        <input
-          type="text"
+        <textarea
+          ref={titleTextareaRef}
           value={title}
           onChange={handleTitleChange}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault()
+              editor?.commands.focus()
+            }
+          }}
           placeholder="Note Title"
-          className="text-3xl sm:text-4xl font-black focus:outline-none w-full bg-transparent placeholder:text-note-fg/30 text-note-fg"
+          rows={1}
+          className="text-3xl sm:text-4xl font-black focus:outline-none w-full bg-transparent placeholder:text-note-fg/30 text-note-fg resize-none overflow-hidden"
         />
       </div>
 
@@ -168,7 +216,7 @@ export function NoteEditor({ initialNote, onDelete }: { initialNote: Note, onDel
 
         {/* Formatting Toolbar Area */}
         <div className="pointer-events-auto relative flex flex-col items-start sm:gap-0">
-          
+
           {/* Mobile Toggle Button */}
           <Button
             onClick={() => setIsToolbarOpen(!isToolbarOpen)}
@@ -178,9 +226,8 @@ export function NoteEditor({ initialNote, onDelete }: { initialNote: Note, onDel
           </Button>
 
           {/* Collapsible Toolbar */}
-          <div className={`absolute bottom-full left-0 mb-4 sm:static sm:mb-0 overflow-hidden transition-all duration-300 ease-out origin-bottom-left sm:origin-bottom ${
-            isToolbarOpen ? 'opacity-100 scale-100 pointer-events-auto translate-y-0' : 'opacity-0 scale-95 pointer-events-none translate-y-2 sm:translate-y-0 sm:pointer-events-auto sm:opacity-100 sm:scale-100'
-          } bg-note-default rounded-xl sm:border-4 border-black sm:shadow-[4px_4px_0_0_#000] z-10`}>
+          <div className={`absolute bottom-full left-0 mb-4 sm:static sm:mb-0 overflow-hidden transition-all duration-300 ease-out origin-bottom-left sm:origin-bottom ${isToolbarOpen ? 'opacity-100 scale-100 pointer-events-auto translate-y-0' : 'opacity-0 scale-95 pointer-events-none translate-y-2 sm:translate-y-0 sm:pointer-events-auto sm:opacity-100 sm:scale-100'
+            } bg-note-default rounded-xl sm:border-4 border-black sm:shadow-[4px_4px_0_0_#000] z-10`}>
             {/* Wrapper to maintain border safely during animation */}
             <div className={`border-4 border-black sm:border-0 rounded-xl sm:rounded-none bg-note-default`}>
               <NoteToolbar editor={editor} />

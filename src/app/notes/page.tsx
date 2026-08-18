@@ -3,22 +3,44 @@ import { OnboardingTour } from '@/components/OnboardingTour'
 import { getNotes, createNote } from './actions'
 import { Button } from '@/components/ui/button'
 import { NoteGrid } from '@/components/notes/NoteGrid'
+import { NotesLayout } from '@/components/notes/NotesLayout'
 import { ThemeSwitcher } from '@/components/ThemeSwitcher'
 import { SettingsDialog } from '@/components/SettingsDialog'
 import { MotivationalQuote } from '@/components/MotivationalQuote'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 
-export default async function NotesPage() {
+export default async function NotesPage({ searchParams }: { searchParams: Promise<{ tab?: string, q?: string }> }) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const notes = await getNotes()
-  const activeNotes = notes.filter(n => !n.isDeleted && !n.isArchived)
+  const { tab = 'active', q = '' } = await searchParams
+
+  const allNotes = await getNotes()
   const userName = user.email?.split('@')[0] || 'User'
 
-  const isReturningUser = notes.length > 0 || (Date.now() - new Date(user.created_at).getTime() > 1000 * 60 * 5)
+  // Filter notes based on tab
+  let filteredNotes = allNotes
+  if (tab === 'archive') {
+    filteredNotes = allNotes.filter(n => n.isArchived && !n.isDeleted)
+  } else if (tab === 'trash') {
+    filteredNotes = allNotes.filter(n => n.isDeleted)
+  } else {
+    // Default: Active notes
+    filteredNotes = allNotes.filter(n => !n.isDeleted && !n.isArchived)
+  }
+
+  // Filter by search query if any
+  if (q.trim()) {
+    const query = q.toLowerCase()
+    filteredNotes = filteredNotes.filter(n => 
+      (n.title && n.title.toLowerCase().includes(query)) || 
+      (n.content && JSON.stringify(n.content).toLowerCase().includes(query))
+    )
+  }
+
+  const isReturningUser = allNotes.length > 0 || (Date.now() - new Date(user.created_at).getTime() > 1000 * 60 * 5)
 
   async function handleCreateNote() {
     'use server'
@@ -28,7 +50,7 @@ export default async function NotesPage() {
 
   return (
     <div className="h-screen bg-app text-foreground flex flex-col font-sans transition-colors duration-300 relative overflow-hidden">
-      <header className="border-b-4 border-black px-6 md:px-10 py-4 flex flex-col sm:flex-row justify-between items-center gap-4 sm:gap-0 bg-header sticky top-0 z-10 transition-colors duration-300">
+      <header className="border-b-4 border-black px-6 md:px-10 py-4 flex flex-col sm:flex-row justify-between items-center gap-4 sm:gap-0 bg-header sticky top-0 z-20 transition-colors duration-300">
         <div className="tour-title">
           <AppTitle defaultName={userName} />
         </div>
@@ -46,12 +68,14 @@ export default async function NotesPage() {
           </form>
         </div>
       </header>
-      <main className="flex-1 flex overflow-hidden">
-        <div className="tour-grid w-full md:w-[380px] lg:w-[450px] xl:w-[600px] overflow-y-auto p-4 md:p-6 lg:p-10 mx-auto md:mx-0">
-          <NoteGrid notes={activeNotes} />
-        </div>
-        <div className="hidden md:flex flex-1 items-center justify-center p-6 lg:p-10 relative">
-          <MotivationalQuote userName={user.email?.split('@')[0] || 'User'} />
+      <main className="flex-1 flex flex-col sm:flex-row overflow-hidden relative">
+        <NotesLayout currentTab={tab} currentQuery={q}>
+          <NoteGrid notes={filteredNotes} tab={tab} />
+        </NotesLayout>
+        
+        {/* Right Hero / Motivation */}
+        <div className="hidden sm:flex flex-1 items-center justify-center p-4 sm:p-6 md:p-8 lg:p-10 relative">
+          <MotivationalQuote userName={userName} />
         </div>
         <OnboardingTour userName={userName} isReturningUser={isReturningUser} />
       </main>
