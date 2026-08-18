@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Joyride, EventData, STATUS, Step, TooltipRenderProps } from 'react-joyride'
+import { Joyride, STATUS, Step, TooltipRenderProps } from 'react-joyride'
 import { useSettings } from '@/hooks/useSettings'
 import { useTheme } from 'next-themes'
 import { X } from 'lucide-react'
@@ -120,7 +120,7 @@ export function OnboardingTour({ userName = 'User', isReturningUser = false }: O
     }
   ]
 
-  const handleJoyrideCallback = (data: EventData) => {
+  const handleJoyrideCallback = (data: any) => {
     const { status } = data
     const finishedStatuses: string[] = [STATUS.FINISHED, STATUS.SKIPPED]
 
@@ -170,7 +170,7 @@ export function OnboardingTour({ userName = 'User', isReturningUser = false }: O
         run={run}
         continuous={true}
         scrollToFirstStep={true}
-        callback={handleJoyrideCallback}
+        onEvent={handleJoyrideCallback}
         tooltipComponent={CustomTooltip}
         options={{
           arrowColor: isDark ? '#27272a' : '#fff',
