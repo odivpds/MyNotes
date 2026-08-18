@@ -21,5 +21,28 @@ export default function manifest(): MetadataRoute.Manifest {
         type: "image/jpeg",
       },
     ],
-  }
+    shortcuts: [
+      {
+        name: "New Note",
+        short_name: "New Note",
+        description: "Create a new note",
+        url: "/notes?new=true",
+        icons: [{ src: "/icon-192.jpg", sizes: "192x192" }]
+      },
+      {
+        name: "Notes List",
+        short_name: "Notes",
+        description: "View all notes",
+        url: "/notes",
+        icons: [{ src: "/icon-192.jpg", sizes: "192x192" }]
+      },
+      {
+        name: "Archived Notes",
+        short_name: "Archive",
+        description: "View archived notes",
+        url: "/notes?tab=archive",
+        icons: [{ src: "/icon-192.jpg", sizes: "192x192" }]
+      }
+    ]
+  } as MetadataRoute.Manifest
 }

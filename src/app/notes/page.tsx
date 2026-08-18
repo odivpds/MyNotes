@@ -10,12 +10,17 @@ import { MotivationalQuote } from '@/components/MotivationalQuote'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 
-export default async function NotesPage({ searchParams }: { searchParams: Promise<{ tab?: string, q?: string }> }) {
+export default async function NotesPage({ searchParams }: { searchParams: Promise<{ tab?: string, q?: string, new?: string }> }) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const { tab = 'active', q = '' } = await searchParams
+  const { tab = 'active', q = '', new: createNew } = await searchParams
+
+  if (createNew === 'true') {
+    const note = await createNote()
+    redirect(`/notes/${note.id}`)
+  }
 
   const allNotes = await getNotes()
   const userName = user.email?.split('@')[0] || 'User'
