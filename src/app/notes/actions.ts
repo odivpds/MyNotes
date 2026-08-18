@@ -18,13 +18,13 @@ export async function getNotes() {
   const userId = await getUserId()
   const userNotes = await db.query.notes.findMany({
     where: eq(notes.userId, userId),
-    orderBy: [desc(notes.createdAt)],
+    orderBy: [desc(notes.updatedAt)],
   })
 
   return userNotes
 }
 
-export async function createNote() {
+export async function createNote(shouldRevalidate = true) {
   const userId = await getUserId()
   const [newNote] = await db.insert(notes).values({
     userId,
@@ -33,7 +33,9 @@ export async function createNote() {
     color: 'Yellow',
   }).returning()
 
-  revalidatePath('/notes')
+  if (shouldRevalidate) {
+    revalidatePath('/notes')
+  }
   return newNote
 }
 

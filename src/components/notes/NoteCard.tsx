@@ -19,6 +19,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { deleteNote, updateNote } from '@/app/notes/actions'
 import { useSettings } from '@/hooks/useSettings'
+import { getColorStyles } from '@/lib/colors'
 
 type Note = typeof notes.$inferSelect
 
@@ -45,20 +46,7 @@ export function NoteCard({ note }: { note: Note }) {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const { confirmBeforeDelete, isLoaded } = useSettings()
 
-  const colorMap: Record<string, string> = {
-    'Default': 'bg-note-default',
-    'Yellow': 'bg-note-yellow text-black',
-    'Pink': 'bg-note-pink',
-    'Blue': 'bg-note-blue',
-    'Green': 'bg-note-green',
-    'Purple': 'bg-note-purple',
-    'Orange': 'bg-note-orange',
-    'Red': 'bg-note-red',
-    'Mint': 'bg-note-mint',
-    'Gray': 'bg-note-gray'
-  }
-
-  const bgColor = colorMap[note.color || 'Default'] || colorMap['Default']
+  const colorStyles = getColorStyles(note.color)
 
   const plainText = extractTextFromTiptap(note.content).trim();
   const words = plainText.split(/\s+/);
@@ -112,11 +100,11 @@ export function NoteCard({ note }: { note: Note }) {
     <>
       <div
         onClick={note.isDeleted ? undefined : handleCardClick}
-        className={`group border-4 border-black rounded-xl shadow-[6px_6px_0_0_#000] hover:translate-y-1 hover:translate-x-1 hover:shadow-none transition-all flex flex-col text-note-fg bg-note-default overflow-hidden h-full relative ${note.isDeleted ? 'opacity-80 grayscale-[50%] cursor-default' : 'cursor-pointer'
+        className={`group border-4 border-black rounded-xl shadow-[6px_6px_0_0_#000] hover:translate-y-1 hover:translate-x-1 hover:shadow-none transition-all flex flex-col overflow-hidden h-full relative bg-note-default text-note-fg ${note.isDeleted ? 'opacity-80 grayscale-[50%] cursor-default' : 'cursor-pointer'
           }`}
       >
         {/* Header / Navbar */}
-        <div className={`px-4 py-3 border-b-4 border-black flex justify-between items-start gap-2 ${bgColor}`}>
+        <div className={`px-4 py-3 border-b-4 border-black flex justify-between items-start gap-2 ${colorStyles.bg} ${colorStyles.text}`}>
           <div className="flex-1 flex items-center gap-2 truncate">
             {note.isPinned && !note.isDeleted && !note.isArchived && (
               <Pin className="w-4 h-4 fill-current shrink-0 rotate-45" />
@@ -177,7 +165,7 @@ export function NoteCard({ note }: { note: Note }) {
           </div>
         </div>
         {/* Body / Content */}
-        <div className="p-4 flex-1 text-sm whitespace-pre-wrap bg-note-default break-words">
+        <div className="p-4 flex-1 text-sm whitespace-pre-wrap bg-transparent break-words">
           <div className="line-clamp-[10]">
             {displayContent}
           </div>

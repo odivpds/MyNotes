@@ -18,8 +18,8 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
-import { ThemeSwitcher } from '@/components/ThemeSwitcher'
-import { DeleteNoteButton } from '@/components/notes/DeleteNoteButton'
+// import { ThemeSwitcher } from '@/components/ThemeSwitcher'
+// import { DeleteNoteButton } from '@/components/notes/DeleteNoteButton'
 
 import { notes } from '@/db/schema'
 
@@ -27,40 +27,19 @@ type Note = typeof notes.$inferSelect
 
 const COLORS = ['Default', 'Yellow', 'Pink', 'Blue', 'Green', 'Purple', 'Orange', 'Red', 'Mint', 'Gray'];
 
-export function NoteEditor({ initialNote, onDelete }: { initialNote: Note, onDelete?: () => Promise<void> }) {
-  const colorMap: Record<string, string> = {
-    'Default': 'bg-note-default',
-    'Yellow': 'bg-note-yellow text-black',
-    'Pink': 'bg-note-pink',
-    'Blue': 'bg-note-blue',
-    'Green': 'bg-note-green',
-    'Purple': 'bg-note-purple',
-    'Orange': 'bg-note-orange',
-    'Red': 'bg-note-red',
-    'Mint': 'bg-note-mint',
-    'Gray': 'bg-note-gray'
-  }
+import { NOTE_COLORS, getColorStyles } from '@/lib/colors'
+import { Plus, MoreHorizontal, X as CloseIcon, List, Trash, Eye, EyeOff, Check } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 
-  const [noteColor, setNoteColor] = useState(initialNote.color || 'Default')
-  const bgColor = colorMap[noteColor] || colorMap['Default']
+export function NoteEditor({ initialNote, onDelete }: { initialNote: Note, onDelete?: () => Promise<void> }) {
+  const router = useRouter()
+  const [noteColor, setNoteColor] = useState(initialNote.color || 'Yellow')
+  const colorStyles = getColorStyles(noteColor)
 
   const [saveStatus, setSaveStatus] = useState<'saved' | 'saving' | 'error'>('saved')
   const [title, setTitle] = useState(initialNote.title || '')
   const [isToolbarOpen, setIsToolbarOpen] = useState(false)
-  const [isPinned, setIsPinned] = useState(initialNote.isPinned || false)
-  const [isArchived, setIsArchived] = useState(initialNote.isArchived || false)
-
-  const handleTogglePin = async () => {
-    const newVal = !isPinned
-    setIsPinned(newVal)
-    await updateNote(initialNote.id, { isPinned: newVal })
-  }
-
-  const handleToggleArchive = async () => {
-    const newVal = !isArchived
-    setIsArchived(newVal)
-    await updateNote(initialNote.id, { isArchived: newVal })
-  }
+  const [showTitle, setShowTitle] = useState(true)
 
   const titleRef = useRef(title)
   const contentRef = useRef(initialNote.content)
@@ -94,13 +73,13 @@ export function NoteEditor({ initialNote, onDelete }: { initialNote: Note, onDel
         nested: true,
       }),
       Placeholder.configure({
-        placeholder: 'Write something brilliant...',
+        placeholder: 'Take a note...',
       }),
     ],
     content: initialNote.content || '',
     editorProps: {
       attributes: {
-        class: 'tiptap focus:outline-none min-h-full max-w-none p-6 text-lg',
+        class: `tiptap focus:outline-none min-h-full max-w-none text-lg`,
       },
     },
     onUpdate: ({ editor }) => {
@@ -133,9 +112,9 @@ export function NoteEditor({ initialNote, onDelete }: { initialNote: Note, onDel
   }
 
   const StatusIndicator = () => {
-    if (saveStatus === 'saving') return <span className="text-sm font-bold text-note-fg bg-note-default px-2 py-1 rounded-full border-2 border-black">Saving...</span>
-    if (saveStatus === 'error') return <span className="text-sm font-bold text-white bg-red-500 px-2 py-1 rounded-full border-2 border-black">Error</span>
-    return <span className="text-sm font-bold text-note-fg bg-note-green px-2 py-1 rounded-full border-2 border-black">Saved</span>
+    if (saveStatus === 'saving') return <span className="text-xs font-bold px-2 py-1 bg-black/10 rounded-full">Saving...</span>
+    if (saveStatus === 'error') return <span className="text-xs font-bold text-white bg-red-500 px-2 py-1 rounded-full">Error</span>
+    return null
   }
 
   const titleTextareaRef = useRef<HTMLTextAreaElement>(null)
@@ -149,65 +128,93 @@ export function NoteEditor({ initialNote, onDelete }: { initialNote: Note, onDel
   }, [title])
 
   return (
-    <div className="flex flex-col h-full flex-1 overflow-hidden text-note-fg bg-note-default relative">
+    <div className="flex flex-col h-full flex-1 overflow-hidden transition-colors duration-300 bg-app text-foreground relative">
 
-      {/* Expanding Top Navbar */}
-      <div className="absolute top-0 left-0 right-0 h-16 [@media(hover:hover)]:h-6 z-20 group">
-        <div className={`absolute top-0 left-0 w-full flex flex-col justify-center overflow-hidden transition-all duration-300 ease-out h-16 [@media(hover:hover)]:h-1.5 [@media(hover:hover)]:group-hover:h-16 ${bgColor} shadow-[0_4px_0_0_#000] [@media(hover:hover)]:shadow-none [@media(hover:hover)]:group-hover:shadow-[0_4px_0_0_#000] border-b-4 border-black [@media(hover:hover)]:border-b-0 [@media(hover:hover)]:group-hover:border-b-4`}>
-          <div className="w-full flex items-center justify-between px-4 sm:px-6 opacity-100 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100 transition-opacity duration-300">
-            <Link href="/notes" className="flex items-center gap-2 font-bold hover:-translate-y-0.5 transition-transform" title="Back to Notes">
-              <ArrowLeft className="w-6 h-6" />
-              <span className="hidden sm:inline uppercase tracking-widest">Back</span>
-            </Link>
+      {/* Sticky Top Bar */}
+      <div className={`px-0 py-1 flex items-center justify-between select-none drag-region ${colorStyles.bg} ${colorStyles.text} opacity-90 hover:opacity-100 transition-opacity`}>
+        <div className="flex items-center">
+          <Link href="/notes?new=true" prefetch={false} title="New Note">
+            <Button variant="ghost" size="icon" className={`rounded-none hover:bg-black/10 ${colorStyles.text}`}>
+              <Plus className="w-5 h-5" />
+            </Button>
+          </Link>
+        </div>
 
-            <div className="flex items-center gap-2 sm:gap-4">
-              <Button
-                variant="outline"
-                size="icon"
-                title={isPinned ? "Unpin Note" : "Pin Note"}
-                onClick={handleTogglePin}
-                className={`hidden sm:inline-flex border-2 border-black rounded-none shadow-[2px_2px_0_0_#000] hover:translate-y-0.5 hover:translate-x-0.5 hover:shadow-none transition-all w-8 h-8 ${isPinned ? 'bg-note-yellow text-black' : 'bg-white dark:bg-zinc-800 text-black dark:text-white'}`}
-              >
-                {isPinned ? <PinOff className="w-4 h-4" /> : <Pin className="w-4 h-4" />}
-              </Button>
+        <div className="flex items-center no-drag">
+          <StatusIndicator />
 
-              <Button
-                variant="outline"
-                size="icon"
-                title={isArchived ? "Unarchive Note" : "Archive Note"}
-                onClick={handleToggleArchive}
-                className={`hidden sm:inline-flex border-2 border-black rounded-none shadow-[2px_2px_0_0_#000] hover:translate-y-0.5 hover:translate-x-0.5 hover:shadow-none transition-all w-8 h-8 ${isArchived ? 'bg-black text-white dark:bg-white dark:text-black' : 'bg-white dark:bg-zinc-800 text-black dark:text-white'}`}
-              >
-                {isArchived ? <ArchiveRestore className="w-4 h-4" /> : <Archive className="w-4 h-4" />}
-              </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger className={`inline-flex items-center justify-center whitespace-nowrap text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 h-9 w-9 rounded-none hover:bg-black/10 ${colorStyles.text}`}>
+              <MoreHorizontal className="w-5 h-5" />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-[280px] p-0 bg-note-default border-4 border-black rounded-xl shadow-[6px_6px_0_0_#000] text-note-fg overflow-hidden z-50">
 
-              <ThemeSwitcher />
-              {onDelete && <DeleteNoteButton onDelete={onDelete} />}
-            </div>
-          </div>
+              {/* Color Grid */}
+              <div className="flex h-12 border-b-4 border-black w-full">
+                {NOTE_COLORS.map((color) => (
+                  <button
+                    key={color.id}
+                    onClick={() => handleColorChange(color.id)}
+                    className={`flex-1 h-full cursor-pointer hover:brightness-90 flex items-center justify-center transition-all ${color.bg}`}
+                    title={color.id}
+                  >
+                    {noteColor === color.id && <Check className="w-5 h-5 text-black" strokeWidth={3} />}
+                  </button>
+                ))}
+              </div>
+
+              <div className="p-2 flex flex-col gap-1">
+                <DropdownMenuItem onClick={() => setShowTitle(!showTitle)} className="cursor-pointer font-bold focus:bg-note-gray focus:text-note-fg p-3 outline-none rounded-lg flex items-center">
+                  {showTitle ? <EyeOff className="w-4 h-4 mr-3" /> : <Eye className="w-4 h-4 mr-3" />}
+                  {showTitle ? 'Hide title' : 'Show title'}
+                </DropdownMenuItem>
+
+                <DropdownMenuItem className="cursor-pointer font-bold focus:bg-note-gray focus:text-note-fg p-0 outline-none rounded-lg">
+                  <Link href="/notes" className="flex items-center w-full p-3">
+                    <List className="w-4 h-4 mr-3" />
+                    Notes list
+                  </Link>
+                </DropdownMenuItem>
+
+                <DropdownMenuItem onClick={onDelete} className="cursor-pointer font-bold focus:bg-red-500 focus:text-white p-3 outline-none rounded-lg text-red-600 flex items-center">
+                  <Trash className="w-4 h-4 mr-3" />
+                  Move to Trash
+                </DropdownMenuItem>
+              </div>
+
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          <Link href="/notes" prefetch={false} title="Close">
+            <Button variant="ghost" size="icon" className={`rounded-none hover:bg-red-500 hover:text-white ${colorStyles.text}`}>
+              <CloseIcon className="w-5 h-5" />
+            </Button>
+          </Link>
         </div>
       </div>
 
       {/* Header / Title area (Plain) */}
-      <div className="flex items-center pt-24 [@media(hover:hover)]:pt-10 px-6 sm:px-12 gap-4">
-        <textarea
-          ref={titleTextareaRef}
-          value={title}
-          onChange={handleTitleChange}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') {
-              e.preventDefault()
-              editor?.commands.focus()
-            }
-          }}
-          placeholder="Note Title"
-          rows={1}
-          className="text-3xl sm:text-4xl font-black focus:outline-none w-full bg-transparent placeholder:text-note-fg/30 text-note-fg resize-none overflow-hidden"
-        />
-      </div>
+      {showTitle && (
+        <div className="flex items-center pt-6 sm:pt-8 px-6 sm:px-12 gap-4">
+          <textarea
+            ref={titleTextareaRef}
+            value={title}
+            onChange={handleTitleChange}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault()
+                editor?.commands.focus()
+              }
+            }}
+            placeholder="Note Title"
+            rows={1}
+            className="text-3xl sm:text-4xl font-black focus:outline-none w-full bg-transparent placeholder:text-foreground/30 text-foreground resize-none overflow-hidden"
+          />
+        </div>
+      )}
 
       {/* Editor Content */}
-      <div className="flex-1 overflow-y-auto cursor-text px-6 sm:px-12 pb-32 mt-4" onClick={() => editor?.commands.focus()}>
+      <div className={`flex-1 overflow-y-auto cursor-text px-6 sm:px-12 pb-32 ${!showTitle ? 'pt-4 sm:pt-6' : 'pt-1'}`} onClick={() => editor?.commands.focus()}>
         <EditorContent editor={editor} />
       </div>
 
@@ -235,29 +242,6 @@ export function NoteEditor({ initialNote, onDelete }: { initialNote: Note, onDel
           </div>
         </div>
 
-        {/* Actions */}
-        <div className="flex items-center gap-2 sm:gap-4 pointer-events-auto bg-note-default p-2 rounded-xl border-4 border-black shadow-[4px_4px_0_0_#000]">
-          <DropdownMenu>
-            <DropdownMenuTrigger className="inline-flex items-center justify-center border-2 border-black hover:translate-y-0.5 hover:translate-x-0.5 transition-all rounded-full bg-white text-black h-8 w-8">
-              <Palette className="w-4 h-4" />
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="border-4 border-black rounded-xl p-3 shadow-[4px_4px_0_0_#000] bg-white w-48 mb-2" align="end" sideOffset={10}>
-              <div className="mb-2 font-bold text-sm text-black">Color</div>
-              <div className="grid grid-cols-5 gap-2">
-                {COLORS.map((colorName) => (
-                  <DropdownMenuItem
-                    key={colorName}
-                    onClick={() => handleColorChange(colorName)}
-                    className={`w-6 h-6 rounded-full border-2 border-black cursor-pointer p-0 ${colorMap[colorName].split(' ')[0] || 'bg-note-default'} ${noteColor === colorName ? 'ring-2 ring-offset-2 ring-black' : ''}`}
-                    title={colorName}
-                  />
-                ))}
-              </div>
-            </DropdownMenuContent>
-          </DropdownMenu>
-
-          <StatusIndicator />
-        </div>
       </div>
     </div>
   )

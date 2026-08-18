@@ -18,7 +18,7 @@ export default async function NotesPage({ searchParams }: { searchParams: Promis
   const { tab = 'active', q = '', new: createNew } = await searchParams
 
   if (createNew === 'true') {
-    const note = await createNote()
+    const note = await createNote(false)
     redirect(`/notes/${note.id}`)
   }
 
