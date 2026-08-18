@@ -170,7 +170,6 @@ export function OnboardingTour({ userName = 'User', isReturningUser = false }: O
         run={run}
         continuous={true}
         scrollToFirstStep={true}
-        showSkipButton={true}
         callback={handleJoyrideCallback}
         tooltipComponent={CustomTooltip}
         options={{
