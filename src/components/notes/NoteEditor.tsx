@@ -35,6 +35,7 @@ export function NoteEditor({ initialNote, onDelete }: { initialNote: Note, onDel
   const router = useRouter()
   const [noteColor, setNoteColor] = useState(initialNote.color || 'Yellow')
   const colorStyles = getColorStyles(noteColor)
+  const isElectron = typeof window !== 'undefined' && navigator.userAgent.includes('Electron')
 
   const [saveStatus, setSaveStatus] = useState<'saved' | 'saving' | 'error'>('saved')
   const [title, setTitle] = useState(initialNote.title || '')
@@ -133,11 +134,17 @@ export function NoteEditor({ initialNote, onDelete }: { initialNote: Note, onDel
       {/* Sticky Top Bar */}
       <div className={`px-0 py-1 flex items-center justify-between select-none drag-region ${colorStyles.bg} ${colorStyles.text} opacity-90 hover:opacity-100 transition-opacity`}>
         <div className="flex items-center">
-          <Link href="/notes?new=true" prefetch={false} title="New Note">
-            <Button variant="ghost" size="icon" className={`rounded-none hover:bg-black/10 ${colorStyles.text}`}>
+          {isElectron ? (
+            <Button variant="ghost" size="icon" className={`rounded-none hover:bg-black/10 ${colorStyles.text}`} title="New Note" onClick={() => window.open('/notes?new=true', '_blank')}>
               <Plus className="w-5 h-5" />
             </Button>
-          </Link>
+          ) : (
+            <Link href="/notes?new=true" prefetch={false} title="New Note">
+              <Button variant="ghost" size="icon" className={`rounded-none hover:bg-black/10 ${colorStyles.text}`}>
+                <Plus className="w-5 h-5" />
+              </Button>
+            </Link>
+          )}
         </div>
 
         <div className="flex items-center no-drag">
@@ -170,10 +177,17 @@ export function NoteEditor({ initialNote, onDelete }: { initialNote: Note, onDel
                 </DropdownMenuItem>
 
                 <DropdownMenuItem className="cursor-pointer font-bold focus:bg-note-gray focus:text-note-fg p-0 outline-none rounded-lg">
-                  <Link href="/notes" className="flex items-center w-full p-3">
-                    <List className="w-4 h-4 mr-3" />
-                    Notes list
-                  </Link>
+                  {isElectron ? (
+                    <button onClick={() => { window.open('/notes', '_blank'); }} className="flex items-center w-full p-3">
+                      <List className="w-4 h-4 mr-3" />
+                      Notes list
+                    </button>
+                  ) : (
+                    <Link href="/notes" className="flex items-center w-full p-3">
+                      <List className="w-4 h-4 mr-3" />
+                      Notes list
+                    </Link>
+                  )}
                 </DropdownMenuItem>
 
                 <DropdownMenuItem onClick={onDelete} className="cursor-pointer font-bold focus:bg-red-500 focus:text-white p-3 outline-none rounded-lg text-red-600 flex items-center">
@@ -185,11 +199,17 @@ export function NoteEditor({ initialNote, onDelete }: { initialNote: Note, onDel
             </DropdownMenuContent>
           </DropdownMenu>
 
-          <Link href="/notes" prefetch={false} title="Close">
-            <Button variant="ghost" size="icon" className={`rounded-none hover:bg-red-500 hover:text-white ${colorStyles.text}`}>
+          {isElectron ? (
+            <Button variant="ghost" size="icon" title="Close" className={`rounded-none hover:bg-red-500 hover:text-white ${colorStyles.text}`} onClick={() => window.close()}>
               <CloseIcon className="w-5 h-5" />
             </Button>
-          </Link>
+          ) : (
+            <Link href="/notes" prefetch={false} title="Close">
+              <Button variant="ghost" size="icon" className={`rounded-none hover:bg-red-500 hover:text-white ${colorStyles.text}`}>
+                <CloseIcon className="w-5 h-5" />
+              </Button>
+            </Link>
+          )}
         </div>
       </div>
 

@@ -16,13 +16,15 @@
     "productName": "NOPEPADS",
     "files": [
       "main.js",
-      "package.json"
+      "package.json",
+      "public/**/*"
     ],
     "directories": {
       "output": "out-electron"
     },
     "win": {
-      "target": "nsis"
+      "target": "nsis",
+      "icon": "public/nopePadsLogo2d.png"
     }
   },
   "dependencies": {

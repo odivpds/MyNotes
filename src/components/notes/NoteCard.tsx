@@ -56,8 +56,15 @@ export function NoteCard({ note }: { note: Note }) {
   // Format date like "29 Jul, 01:56"
   const formattedDate = new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }).format(new Date(note.updatedAt))
 
+  const isElectron = typeof window !== 'undefined' && navigator.userAgent.includes('Electron')
+
   const handleCardClick = () => {
-    router.push(`/notes/${note.id}`)
+    if (isElectron) {
+      // In Electron, open note in a separate floating window
+      window.open(`/notes/${note.id}`, '_blank')
+    } else {
+      router.push(`/notes/${note.id}`)
+    }
   }
 
   const handleDelete = async (e?: React.MouseEvent) => {
