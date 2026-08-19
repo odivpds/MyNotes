@@ -9,6 +9,7 @@ import { SettingsDialog } from '@/components/SettingsDialog'
 import { MotivationalQuote } from '@/components/MotivationalQuote'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import { NewNoteButton } from '@/components/notes/NewNoteButton'
 
 export default async function NotesPage({ searchParams }: { searchParams: Promise<{ tab?: string, q?: string, new?: string }> }) {
   const supabase = await createClient()
@@ -66,11 +67,14 @@ export default async function NotesPage({ searchParams }: { searchParams: Promis
           <div className="tour-theme">
             <ThemeSwitcher />
           </div>
-          <form action={handleCreateNote}>
-            <Button type="submit" size="icon" title="New Note" className="tour-new-note border-2 border-black font-black text-2xl uppercase shadow-[4px_4px_0_0_#000] hover:translate-y-1 hover:translate-x-1 hover:shadow-none transition-transform bg-note-yellow text-black">
-              +
-            </Button>
-          </form>
+          {/* In Electron: opens a frameless window. On web: uses server action form */}
+          <NewNoteButton>
+            <form action={handleCreateNote}>
+              <Button type="submit" size="icon" title="New Note" className="tour-new-note border-2 border-black font-black text-2xl uppercase shadow-[4px_4px_0_0_#000] hover:translate-y-1 hover:translate-x-1 hover:shadow-none transition-transform bg-note-yellow text-black">
+                +
+              </Button>
+            </form>
+          </NewNoteButton>
         </div>
       </header>
       <main className="flex-1 flex flex-col sm:flex-row overflow-hidden relative">

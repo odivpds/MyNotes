@@ -8,7 +8,7 @@ import Placeholder from '@tiptap/extension-placeholder'
 import { NoteToolbar } from './NoteToolbar'
 import { useEffect, useState, useCallback, useRef } from 'react'
 import debounce from 'lodash.debounce'
-import { updateNote } from '@/app/notes/actions'
+import { updateNote, createNote } from '@/app/notes/actions'
 import { Palette, ArrowLeft, PenTool, X, Pin, PinOff, Archive, ArchiveRestore } from 'lucide-react'
 import {
   DropdownMenu,
@@ -135,7 +135,7 @@ export function NoteEditor({ initialNote, onDelete }: { initialNote: Note, onDel
       <div className={`px-0 py-1 flex items-center justify-between select-none drag-region ${colorStyles.bg} ${colorStyles.text} opacity-90 hover:opacity-100 transition-opacity`}>
         <div className="flex items-center no-drag">
           {isElectron ? (
-            <Button variant="ghost" size="icon" className={`rounded-none hover:bg-black/10 ${colorStyles.text}`} title="New Note" onClick={() => window.open('/notes?new=true', '_blank')}>
+            <Button variant="ghost" size="icon" className={`rounded-none hover:bg-black/10 ${colorStyles.text}`} title="New Note" onClick={async () => { const note = await createNote(false); window.open(`/notes/${note.id}`, '_blank') }}>
               <Plus className="w-5 h-5" />
             </Button>
           ) : (
