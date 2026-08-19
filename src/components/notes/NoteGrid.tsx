@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { NoteCard } from './NoteCard'
 import { notes } from '@/db/schema'
 import { motion, Variants } from 'framer-motion'
@@ -36,19 +36,19 @@ const itemVariants: Variants = {
 // Helper function to group notes by time
 function groupNotesByTime(notes: Note[]): { label: string; notes: Note[] }[] {
   const groups: { label: string; notes: Note[] }[] = []
-  
+
   notes.forEach(note => {
     const date = new Date(note.updatedAt)
     const now = new Date()
-    
+
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
     const noteDate = new Date(date.getFullYear(), date.getMonth(), date.getDate())
-    
+
     const diffTime = today.getTime() - noteDate.getTime()
     const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24))
-    
+
     let label = ''
-    
+
     if (diffDays <= 0) {
       label = 'Today'
     } else if (diffDays === 1) {
@@ -62,14 +62,14 @@ function groupNotesByTime(notes: Note[]): { label: string; notes: Note[] }[] {
     } else {
       label = date.getFullYear().toString()
     }
-    
+
     if (groups.length > 0 && groups[groups.length - 1].label === label) {
       groups[groups.length - 1].notes.push(note)
     } else {
       groups.push({ label, notes: [note] })
     }
   })
-  
+
   return groups
 }
 
@@ -80,6 +80,12 @@ export function NoteGrid({ notes, tab = 'active' }: { notes: Note[], tab?: strin
   const [isSelectMode, setIsSelectMode] = useState(false)
   const [selectedNotes, setSelectedNotes] = useState<Set<string>>(new Set())
   const [isDeleting, setIsDeleting] = useState(false)
+
+  // Auto-cancel bulk selection when changing tabs
+  useEffect(() => {
+    setIsSelectMode(false)
+    setSelectedNotes(new Set())
+  }, [tab])
 
   const handleToggleSelect = (noteId: string) => {
     const newSet = new Set(selectedNotes)
@@ -128,7 +134,7 @@ export function NoteGrid({ notes, tab = 'active' }: { notes: Note[], tab?: strin
 
   const pinnedNotes = tab === 'active' ? notes.filter(n => n.isPinned) : []
   const unpinnedNotes = tab === 'active' ? notes.filter(n => !n.isPinned) : notes
-  
+
   const groupedUnpinnedNotes = groupNotesByTime(unpinnedNotes)
 
   return (
@@ -136,10 +142,13 @@ export function NoteGrid({ notes, tab = 'active' }: { notes: Note[], tab?: strin
       <div className="flex flex-col gap-8 w-full max-w-4xl mx-auto lg:mx-0 pb-20">
         {pinnedNotes.length > 0 && (
           <div className="flex flex-col gap-4">
-            <div className="flex items-center justify-between border-b-4 border-black pb-1 mb-2">
+            <div className="flex items-center justify-between border-b-4 border-black pb-2 mb-2">
               <h3 className="font-black text-sm uppercase tracking-widest opacity-70 inline-block w-max">Pinned</h3>
               {!isSelectMode && (
-                <button onClick={() => setIsSelectMode(true)} className="text-xs font-bold uppercase hover:underline">
+                <button
+                  onClick={() => setIsSelectMode(true)}
+                  className="font-black text-xs uppercase tracking-widest border-2 border-black px-3 py-1 bg-[#FDE047] text-black hover:bg-black hover:text-[#FDE047] transition-all shadow-[2px_2px_0_0_#000] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none"
+                >
                   Select
                 </button>
               )}
@@ -152,8 +161,8 @@ export function NoteGrid({ notes, tab = 'active' }: { notes: Note[], tab?: strin
             >
               {pinnedNotes.map(note => (
                 <motion.div key={note.id} variants={itemVariants} className="break-inside-avoid">
-                  <NoteCard 
-                    note={note} 
+                  <NoteCard
+                    note={note}
                     isSelectMode={isSelectMode}
                     isSelected={selectedNotes.has(note.id)}
                     onToggleSelect={() => handleToggleSelect(note.id)}
@@ -167,12 +176,15 @@ export function NoteGrid({ notes, tab = 'active' }: { notes: Note[], tab?: strin
         <div className="flex flex-col gap-8">
           {groupedUnpinnedNotes.map((group) => (
             <div key={group.label} className="flex flex-col gap-4">
-              <div className="flex items-center justify-between border-b-4 border-black pb-1 mb-2">
+              <div className="flex items-center justify-between border-b-4 border-black pb-2 mb-2">
                 <h3 className="font-black text-sm uppercase tracking-widest opacity-70 inline-block w-max">
                   {group.label}
                 </h3>
                 {!isSelectMode && (
-                  <button onClick={() => setIsSelectMode(true)} className="text-xs font-bold uppercase hover:underline">
+                  <button
+                    onClick={() => setIsSelectMode(true)}
+                    className="font-black text-xs uppercase tracking-widest border-2 border-black px-3 py-1 bg-[#FDE047] text-black hover:bg-black hover:text-[#FDE047] transition-all shadow-[2px_2px_0_0_#000] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none"
+                  >
                     Select
                   </button>
                 )}
@@ -185,8 +197,8 @@ export function NoteGrid({ notes, tab = 'active' }: { notes: Note[], tab?: strin
               >
                 {group.notes.map(note => (
                   <motion.div key={note.id} variants={itemVariants} className="break-inside-avoid">
-                    <NoteCard 
-                      note={note} 
+                    <NoteCard
+                      note={note}
                       isSelectMode={isSelectMode}
                       isSelected={selectedNotes.has(note.id)}
                       onToggleSelect={() => handleToggleSelect(note.id)}
@@ -204,16 +216,16 @@ export function NoteGrid({ notes, tab = 'active' }: { notes: Note[], tab?: strin
         <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-[#FDE047] border-4 border-black rounded-xl p-3 px-6 shadow-[8px_8px_0_0_#000] z-50 flex items-center gap-6 animate-in slide-in-from-bottom-10 fade-in duration-300">
           <span className="font-bold whitespace-nowrap">{selectedNotes.size} selected</span>
           <div className="flex items-center gap-2">
-            <Button 
-              onClick={() => { setIsSelectMode(false); setSelectedNotes(new Set()) }} 
+            <Button
+              onClick={() => { setIsSelectMode(false); setSelectedNotes(new Set()) }}
               disabled={isDeleting}
               variant="outline"
               className="border-2 border-black font-bold uppercase hover:bg-black/5"
             >
               Cancel
             </Button>
-            <Button 
-              onClick={handleBulkTrash} 
+            <Button
+              onClick={handleBulkTrash}
               disabled={selectedNotes.size === 0 || isDeleting}
               className="border-2 border-black font-bold uppercase shadow-[4px_4px_0_0_#000] hover:translate-y-1 hover:translate-x-1 hover:shadow-none transition-all bg-red-500 text-black hover:bg-red-600"
             >

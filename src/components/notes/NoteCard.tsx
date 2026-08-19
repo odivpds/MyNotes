@@ -120,11 +120,11 @@ export function NoteCard({
   return (
     <>
       <div
-        onClick={note.isDeleted ? undefined : handleCardClick}
-        className={`group border-4 border-black rounded-xl shadow-[6px_6px_0_0_#000] hover:translate-y-1 hover:translate-x-1 hover:shadow-none transition-all flex flex-col overflow-hidden h-full relative bg-note-default text-note-fg ${note.isDeleted ? 'opacity-80 grayscale-[50%] cursor-default' : 'cursor-pointer'
+        onClick={(isSelectMode || !note.isDeleted) ? handleCardClick : undefined}
+        className={`group border-4 border-black rounded-xl shadow-[6px_6px_0_0_#000] hover:translate-y-1 hover:translate-x-1 hover:shadow-none transition-all flex flex-col overflow-hidden h-full relative bg-note-default text-note-fg ${note.isDeleted && !isSelectMode ? 'opacity-80 grayscale-[50%] cursor-default' : 'cursor-pointer'
           } ${isSelectMode && isSelected ? 'ring-4 ring-black ring-offset-2' : ''}`}
       >
-        {isSelectMode && !note.isDeleted && (
+        {isSelectMode && (
           <div className={`absolute top-3 right-3 z-10 border-4 border-black rounded-full shadow-[2px_2px_0_0_#000] w-6 h-6 flex items-center justify-center transition-colors ${isSelected ? 'bg-black text-white' : 'bg-white'}`}>
             {isSelected && <Check className="w-4 h-4" strokeWidth={4} />}
           </div>
