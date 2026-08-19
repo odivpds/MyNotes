@@ -1,8 +1,11 @@
 'use client'
 
+import { useState } from 'react'
 import { NoteCard } from './NoteCard'
 import { notes } from '@/db/schema'
 import { motion, Variants } from 'framer-motion'
+import { Button } from '@/components/ui/button'
+import { deleteNotesBulk } from '@/app/notes/actions'
 
 type Note = typeof notes.$inferSelect
 
@@ -74,6 +77,34 @@ export function NoteGrid({ notes, tab = 'active' }: { notes: Note[], tab?: strin
   const isArchive = tab === 'archive'
   const isTrash = tab === 'trash'
 
+  const [isSelectMode, setIsSelectMode] = useState(false)
+  const [selectedNotes, setSelectedNotes] = useState<Set<string>>(new Set())
+  const [isDeleting, setIsDeleting] = useState(false)
+
+  const handleToggleSelect = (noteId: string) => {
+    const newSet = new Set(selectedNotes)
+    if (newSet.has(noteId)) {
+      newSet.delete(noteId)
+    } else {
+      newSet.add(noteId)
+    }
+    setSelectedNotes(newSet)
+  }
+
+  const handleBulkTrash = async () => {
+    if (selectedNotes.size === 0) return
+    setIsDeleting(true)
+    try {
+      await deleteNotesBulk(Array.from(selectedNotes), !isTrash)
+      setSelectedNotes(new Set())
+      setIsSelectMode(false)
+    } catch (error) {
+      console.error("Failed to delete notes", error)
+    } finally {
+      setIsDeleting(false)
+    }
+  }
+
   if (notes.length === 0) {
     return (
       <motion.div
@@ -101,46 +132,96 @@ export function NoteGrid({ notes, tab = 'active' }: { notes: Note[], tab?: strin
   const groupedUnpinnedNotes = groupNotesByTime(unpinnedNotes)
 
   return (
-    <div className="flex flex-col gap-8 w-full max-w-4xl mx-auto lg:mx-0">
-      {pinnedNotes.length > 0 && (
-        <div className="flex flex-col gap-4">
-          <h3 className="font-black text-sm uppercase tracking-widest opacity-70 border-b-4 border-black pb-1 inline-block w-max">Pinned</h3>
-          <motion.div
-            variants={containerVariants}
-            initial="hidden"
-            animate="show"
-            className="flex flex-col gap-4"
-          >
-            {pinnedNotes.map(note => (
-              <motion.div key={note.id} variants={itemVariants} className="break-inside-avoid">
-                <NoteCard note={note} />
-              </motion.div>
-            ))}
-          </motion.div>
-        </div>
-      )}
-
-      <div className="flex flex-col gap-8">
-        {groupedUnpinnedNotes.map((group) => (
-          <div key={group.label} className="flex flex-col gap-4">
-            <h3 className="font-black text-sm uppercase tracking-widest opacity-70 border-b-4 border-black pb-1 inline-block w-max">
-              {group.label}
-            </h3>
+    <>
+      <div className="flex flex-col gap-8 w-full max-w-4xl mx-auto lg:mx-0 pb-20">
+        {pinnedNotes.length > 0 && (
+          <div className="flex flex-col gap-4">
+            <div className="flex items-center justify-between border-b-4 border-black pb-1 mb-2">
+              <h3 className="font-black text-sm uppercase tracking-widest opacity-70 inline-block w-max">Pinned</h3>
+              {!isSelectMode && (
+                <button onClick={() => setIsSelectMode(true)} className="text-xs font-bold uppercase hover:underline">
+                  Select
+                </button>
+              )}
+            </div>
             <motion.div
               variants={containerVariants}
               initial="hidden"
               animate="show"
               className="flex flex-col gap-4"
             >
-              {group.notes.map(note => (
+              {pinnedNotes.map(note => (
                 <motion.div key={note.id} variants={itemVariants} className="break-inside-avoid">
-                  <NoteCard note={note} />
+                  <NoteCard 
+                    note={note} 
+                    isSelectMode={isSelectMode}
+                    isSelected={selectedNotes.has(note.id)}
+                    onToggleSelect={() => handleToggleSelect(note.id)}
+                  />
                 </motion.div>
               ))}
             </motion.div>
           </div>
-        ))}
+        )}
+
+        <div className="flex flex-col gap-8">
+          {groupedUnpinnedNotes.map((group) => (
+            <div key={group.label} className="flex flex-col gap-4">
+              <div className="flex items-center justify-between border-b-4 border-black pb-1 mb-2">
+                <h3 className="font-black text-sm uppercase tracking-widest opacity-70 inline-block w-max">
+                  {group.label}
+                </h3>
+                {!isSelectMode && (
+                  <button onClick={() => setIsSelectMode(true)} className="text-xs font-bold uppercase hover:underline">
+                    Select
+                  </button>
+                )}
+              </div>
+              <motion.div
+                variants={containerVariants}
+                initial="hidden"
+                animate="show"
+                className="flex flex-col gap-4"
+              >
+                {group.notes.map(note => (
+                  <motion.div key={note.id} variants={itemVariants} className="break-inside-avoid">
+                    <NoteCard 
+                      note={note} 
+                      isSelectMode={isSelectMode}
+                      isSelected={selectedNotes.has(note.id)}
+                      onToggleSelect={() => handleToggleSelect(note.id)}
+                    />
+                  </motion.div>
+                ))}
+              </motion.div>
+            </div>
+          ))}
+        </div>
       </div>
-    </div>
+
+      {/* Floating Bulk Action Toolbar */}
+      {isSelectMode && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-[#FDE047] border-4 border-black rounded-xl p-3 px-6 shadow-[8px_8px_0_0_#000] z-50 flex items-center gap-6 animate-in slide-in-from-bottom-10 fade-in duration-300">
+          <span className="font-bold whitespace-nowrap">{selectedNotes.size} selected</span>
+          <div className="flex items-center gap-2">
+            <Button 
+              onClick={() => { setIsSelectMode(false); setSelectedNotes(new Set()) }} 
+              disabled={isDeleting}
+              variant="outline"
+              className="border-2 border-black font-bold uppercase hover:bg-black/5"
+            >
+              Cancel
+            </Button>
+            <Button 
+              onClick={handleBulkTrash} 
+              disabled={selectedNotes.size === 0 || isDeleting}
+              className="border-2 border-black font-bold uppercase shadow-[4px_4px_0_0_#000] hover:translate-y-1 hover:translate-x-1 hover:shadow-none transition-all bg-red-500 text-black hover:bg-red-600"
+            >
+              {isDeleting ? 'Processing...' : (isTrash ? 'Delete 4ever' : 'Trash')}
+            </Button>
+          </div>
+        </div>
+      )}
+    </>
   )
 }

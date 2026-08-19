@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { notes } from '@/db/schema'
 import { useRouter } from 'next/navigation'
-import { MoreHorizontal, Trash, ExternalLink, Pin, Archive, Undo2, PinOff } from 'lucide-react'
+import { MoreHorizontal, Trash, ExternalLink, Pin, Archive, Undo2, PinOff, Check } from 'lucide-react'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -40,7 +40,17 @@ function extractTextFromTiptap(json: any): string {
   return text;
 }
 
-export function NoteCard({ note }: { note: Note }) {
+export function NoteCard({ 
+  note, 
+  isSelectMode, 
+  isSelected, 
+  onToggleSelect 
+}: { 
+  note: Note, 
+  isSelectMode?: boolean, 
+  isSelected?: boolean, 
+  onToggleSelect?: () => void 
+}) {
   const router = useRouter()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
@@ -59,6 +69,10 @@ export function NoteCard({ note }: { note: Note }) {
   const isElectron = typeof window !== 'undefined' && navigator.userAgent.includes('Electron')
 
   const handleCardClick = () => {
+    if (isSelectMode && onToggleSelect) {
+      onToggleSelect()
+      return
+    }
     if (isElectron) {
       // In Electron, open note in a separate floating window
       window.open(`/notes/${note.id}`, '_blank')
@@ -108,8 +122,13 @@ export function NoteCard({ note }: { note: Note }) {
       <div
         onClick={note.isDeleted ? undefined : handleCardClick}
         className={`group border-4 border-black rounded-xl shadow-[6px_6px_0_0_#000] hover:translate-y-1 hover:translate-x-1 hover:shadow-none transition-all flex flex-col overflow-hidden h-full relative bg-note-default text-note-fg ${note.isDeleted ? 'opacity-80 grayscale-[50%] cursor-default' : 'cursor-pointer'
-          }`}
+          } ${isSelectMode && isSelected ? 'ring-4 ring-black ring-offset-2' : ''}`}
       >
+        {isSelectMode && !note.isDeleted && (
+          <div className={`absolute top-3 right-3 z-10 border-4 border-black rounded-full shadow-[2px_2px_0_0_#000] w-6 h-6 flex items-center justify-center transition-colors ${isSelected ? 'bg-black text-white' : 'bg-white'}`}>
+            {isSelected && <Check className="w-4 h-4" strokeWidth={4} />}
+          </div>
+        )}
         {/* Header / Navbar */}
         <div className={`px-4 py-3 border-b-4 border-black flex justify-between items-start gap-2 ${colorStyles.bg} ${colorStyles.text}`}>
           <div className="flex-1 flex items-center gap-2 truncate">

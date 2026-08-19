@@ -2,7 +2,7 @@
 
 import { db } from '@/db'
 import { notes } from '@/db/schema'
-import { eq, desc, and } from 'drizzle-orm'
+import { eq, desc, and, inArray } from 'drizzle-orm'
 import { revalidatePath } from 'next/cache'
 
 import { createClient } from '@/lib/supabase/server'
@@ -57,6 +57,21 @@ export async function deleteNote(id: string, softDelete = true) {
   } else {
     await db.delete(notes)
       .where(and(eq(notes.id, id), eq(notes.userId, userId)))
+  }
+
+  revalidatePath('/notes')
+}
+
+export async function deleteNotesBulk(ids: string[], softDelete = true) {
+  if (ids.length === 0) return;
+  const userId = await getUserId()
+  if (softDelete) {
+    await db.update(notes)
+      .set({ isDeleted: true, updatedAt: new Date() })
+      .where(and(inArray(notes.id, ids), eq(notes.userId, userId)))
+  } else {
+    await db.delete(notes)
+      .where(and(inArray(notes.id, ids), eq(notes.userId, userId)))
   }
 
   revalidatePath('/notes')
