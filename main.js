@@ -1,4 +1,5 @@
 const { app, BrowserWindow, shell } = require('electron')
+const path = require('path')
 
 let mainWindow
 
@@ -7,6 +8,7 @@ function createWindow() {
     width: 1200,
     height: 800,
     title: 'NOPEPADS',
+    icon: path.join(__dirname, 'public', 'nopePadsLogo2d.png'),
     autoHideMenuBar: true, // Hide the default windows menu bar (File, Edit, etc)
     webPreferences: {
       nodeIntegration: false,
