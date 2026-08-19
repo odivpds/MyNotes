@@ -1,8 +1,10 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { NotesSidebar } from './NotesSidebar'
 import { NotesSearch } from './NotesSearch'
+import { useSettings } from '@/hooks/useSettings'
 
 export function NotesLayout({ 
   children, 
@@ -13,6 +15,23 @@ export function NotesLayout({
   currentTab: string
   currentQuery: string
 }) {
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const { updateAppName, updateAppSuffix } = useSettings()
+
+  useEffect(() => {
+    const name = searchParams.get('set_name')
+    if (name) {
+      updateAppName(name)
+      // Extract first word for suffix or use full name if short
+      const suffix = name.split(' ')[0].slice(0, 10).toUpperCase()
+      updateAppSuffix(suffix)
+      
+      // Remove query param without refreshing
+      router.replace('/notes', { scroll: false })
+    }
+  }, [searchParams, router, updateAppName, updateAppSuffix])
+
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const [isPinned, setIsPinned] = useState(false) // Whether it was opened via button
 

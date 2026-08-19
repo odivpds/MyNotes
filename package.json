@@ -2,11 +2,28 @@
   "name": "notepad",
   "version": "0.1.0",
   "private": true,
+  "main": "main.js",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "electron:dev": "electron .",
+    "electron:build": "electron-builder -w"
+  },
+  "build": {
+    "appId": "com.nopepads.app",
+    "productName": "NOPEPADS",
+    "files": [
+      "main.js",
+      "package.json"
+    ],
+    "directories": {
+      "output": "out-electron"
+    },
+    "win": {
+      "target": "nsis"
+    }
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",
@@ -46,6 +63,8 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "drizzle-kit": "^0.31.10",
+    "electron": "^43.4.0",
+    "electron-builder": "^26.15.3",
     "eslint": "^9",
     "eslint-config-next": "16.3.1",
     "tailwindcss": "^4",

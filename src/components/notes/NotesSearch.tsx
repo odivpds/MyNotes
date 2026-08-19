@@ -57,19 +57,19 @@ export function NotesSearch({
       </Button>
 
       <div className="relative w-full">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-500" />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-500 dark:text-zinc-400" />
         <Input
           placeholder="Search notes..."
           value={searchValue}
           onChange={handleSearchChange}
-          className="w-full h-14 pl-10 pr-10 border-4 border-black rounded-none shadow-[4px_4px_0_0_#000] focus-visible:ring-0 focus-visible:shadow-none focus-visible:translate-x-1 focus-visible:translate-y-1 transition-all text-lg font-bold bg-white text-black"
+          className="w-full h-14 pl-10 pr-10 border-4 border-black rounded-none shadow-[4px_4px_0_0_#000] focus-visible:ring-0 focus-visible:shadow-none focus-visible:translate-x-1 focus-visible:translate-y-1 transition-all text-lg font-bold bg-note-default text-note-fg"
         />
         {searchValue && (
           <button
             onClick={clearSearch}
-            className="absolute right-3 top-1/2 -translate-y-1/2 p-1 hover:bg-zinc-200 rounded-full transition-colors"
+            className="absolute right-3 top-1/2 -translate-y-1/2 p-1 hover:bg-zinc-200 dark:hover:bg-zinc-700 rounded-full transition-colors"
           >
-            <X className="w-5 h-5 text-zinc-600" />
+            <X className="w-5 h-5 text-zinc-600 dark:text-zinc-300" />
           </button>
         )}
       </div>

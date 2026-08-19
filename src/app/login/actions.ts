@@ -56,7 +56,12 @@ export async function signup(formData: FormData) {
   }
 
   revalidatePath('/', 'layout')
-  redirect('/notes')
+  const name = formData.get('name') as string
+  if (name && name.trim()) {
+    redirect(`/notes?set_name=${encodeURIComponent(name.trim())}`)
+  } else {
+    redirect('/notes')
+  }
 }
 
 export async function logout() {
