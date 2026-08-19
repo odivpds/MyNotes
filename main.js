@@ -119,6 +119,7 @@ function createNoteWindow(noteId) {
     title: 'NOPEPADS',
     icon: ICON_PATH,
     autoHideMenuBar: true,
+    frame: false,
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,

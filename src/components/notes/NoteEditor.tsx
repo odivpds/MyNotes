@@ -133,7 +133,7 @@ export function NoteEditor({ initialNote, onDelete }: { initialNote: Note, onDel
 
       {/* Sticky Top Bar */}
       <div className={`px-0 py-1 flex items-center justify-between select-none drag-region ${colorStyles.bg} ${colorStyles.text} opacity-90 hover:opacity-100 transition-opacity`}>
-        <div className="flex items-center">
+        <div className="flex items-center no-drag">
           {isElectron ? (
             <Button variant="ghost" size="icon" className={`rounded-none hover:bg-black/10 ${colorStyles.text}`} title="New Note" onClick={() => window.open('/notes?new=true', '_blank')}>
               <Plus className="w-5 h-5" />

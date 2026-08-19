@@ -204,6 +204,23 @@
   }
 }
 
+/* Electron drag region utilities */
+.drag-region {
+  -webkit-app-region: drag;
+}
+
+.no-drag {
+  -webkit-app-region: no-drag;
+}
+
+/* Ensure no border/outline on frameless Electron windows */
+html, body {
+  margin: 0;
+  padding: 0;
+  border: none;
+  outline: none;
+}
+
 /* Tiptap Custom Styles for Neobrutalism */
 .tiptap p {
   margin-bottom: 1em;
