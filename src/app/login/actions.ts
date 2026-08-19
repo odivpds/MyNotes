@@ -17,9 +17,15 @@ export async function login(formData: FormData) {
       password,
     })
 
-    if (error) errorMsg = error.message
+    if (error) {
+      if (error.message === 'Invalid login credentials') {
+        errorMsg = 'Wrong email or password. Try again.'
+      } else {
+        errorMsg = error.message
+      }
+    }
   } catch (err: any) {
-    errorMsg = err.message || 'Unknown error during login'
+    errorMsg = err.message || 'Something went wrong. Try again.'
   }
 
   if (errorMsg) {
@@ -32,6 +38,7 @@ export async function login(formData: FormData) {
 
 export async function signup(formData: FormData) {
   let errorMsg = ''
+  let successMsg = ''
   try {
     const supabase = await createClient()
     const email = formData.get('email') as string
@@ -43,16 +50,24 @@ export async function signup(formData: FormData) {
     })
 
     if (error) {
-      errorMsg = error.message
+      if (error.message.includes('already registered')) {
+        errorMsg = 'Email already registered. Just log in.'
+      } else {
+        errorMsg = error.message
+      }
     } else if (!data.session) {
-      errorMsg = 'Email confirmation required! Please disable "Confirm email" in Supabase Authentication settings.'
+      successMsg = 'Check your inbox! We sent a verification link.'
     }
   } catch (err: any) {
-    errorMsg = err.message || 'Unknown error during signup'
+    errorMsg = err.message || 'Something went wrong. Try again.'
   }
 
   if (errorMsg) {
     redirect(`/login?error=${encodeURIComponent(errorMsg)}`)
+  }
+  
+  if (successMsg) {
+    redirect(`/login?message=${encodeURIComponent(successMsg)}`)
   }
 
   revalidatePath('/', 'layout')

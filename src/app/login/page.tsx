@@ -5,8 +5,8 @@ import { PasswordInput } from '@/components/PasswordInput'
 import { ForgotPasswordDialog } from '@/components/ForgotPasswordDialog'
 import { MotivationalQuote } from '@/components/MotivationalQuote'
 
-export default async function LoginPage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
-  const { error } = await searchParams
+export default async function LoginPage({ searchParams }: { searchParams: Promise<{ error?: string, message?: string }> }) {
+  const { error, message } = await searchParams
   return (
     <div className="flex min-h-screen lg:h-screen lg:overflow-hidden bg-zinc-800">
 
@@ -32,8 +32,14 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
           </div>
 
           {error && (
-            <div className="p-4 mb-6 bg-red-400 border-4 border-black text-black font-black uppercase shadow-[4px_4px_0_0_#000] text-center">
+            <div className="p-3 mb-6 bg-red-400 border-2 sm:border-4 border-black text-black font-black uppercase shadow-[3px_3px_0_0_#000] sm:shadow-[4px_4px_0_0_#000] text-center text-sm sm:text-base">
               {error}
+            </div>
+          )}
+
+          {message && (
+            <div className="p-3 mb-6 bg-green-400 border-2 sm:border-4 border-black text-black font-black uppercase shadow-[3px_3px_0_0_#000] sm:shadow-[4px_4px_0_0_#000] text-center text-sm sm:text-base">
+              {message}
             </div>
           )}
 
