@@ -261,11 +261,58 @@ html, body {
 
 .tiptap ul[data-type="taskList"] li {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
+  margin-bottom: 0.5em;
 }
 
 .tiptap ul[data-type="taskList"] li>label {
-  margin-right: 0.5em;
+  margin-right: 1em;
+  margin-top: 0.25em; /* Nudge down slightly to align with text */
+  user-select: none;
+}
+
+.tiptap ul[data-type="taskList"] li>label>input[type="checkbox"] {
+  appearance: none;
+  -webkit-appearance: none;
+  background-color: transparent;
+  margin: 0;
+  font: inherit;
+  color: currentColor;
+  width: 1.5em;
+  height: 1.5em;
+  border: 3px solid currentColor;
+  border-radius: 4px;
+  display: grid;
+  place-content: center;
+  cursor: pointer;
+  box-shadow: 2px 2px 0 0 currentColor;
+  transition: all 0.1s ease-in-out;
+}
+
+.tiptap ul[data-type="taskList"] li>label>input[type="checkbox"]:active {
+  box-shadow: 0px 0px 0 0 currentColor;
+  transform: translate(2px, 2px);
+}
+
+.tiptap ul[data-type="taskList"] li>label>input[type="checkbox"]::before {
+  content: "";
+  width: 0.8em;
+  height: 0.8em;
+  transform: scale(0);
+  transition: 120ms transform ease-in-out;
+  box-shadow: inset 1em 1em currentColor;
+  background-color: currentColor;
+  transform-origin: center;
+  clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
+}
+
+.tiptap ul[data-type="taskList"] li>label>input[type="checkbox"]:checked::before {
+  transform: scale(1);
+}
+
+.tiptap ul[data-type="taskList"] li[data-checked="true"] > div {
+  text-decoration: line-through;
+  opacity: 0.7;
 }
 
 .tiptap blockquote {
@@ -299,6 +346,7 @@ html, body {
   background: none;
   padding: 0;
   border: none;
+  color: inherit;
 }
 
 .tiptap p.is-editor-empty:first-child::before {
